@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/nav.tsx","./src/components/ui/pillbutton.tsx","./src/components/ui/sectionheading.tsx","./src/hooks/useinview.ts","./src/hooks/usemediaquery.ts","./src/hooks/usereducedmotion.ts"],"version":"5.9.3"}

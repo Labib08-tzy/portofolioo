@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/700.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/700.css";
+@import "./tokens.css";
+
+@layer base {
+  html {
+    background-color: var(--c-ink);
+    color: var(--c-sand);
+    font-family: var(--font-sans);
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--c-ink);
+    color: var(--c-sand);
+    min-height: 100vh;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--c-brass);
+    color: var(--c-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--c-brass);
+    outline-offset: 3px;
+  }
+}
+
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 1rem;
+  z-index: 100;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  background-color: var(--c-brass);
+  color: var(--c-ink);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.brutal-card {
+  background-color: var(--c-forest-900);
+  border: 1px solid var(--c-forest-600);
+  box-shadow: var(--shadow-brutal);
+}
+
+.brutal-card-lg {
+  background-color: var(--c-forest-900);
+  border: 1px solid var(--c-forest-600);
+  box-shadow: var(--shadow-brutal-lg);
+}
+
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--c-forest-600) 18%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--c-forest-600) 18%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.bg-noise-subtle {
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--c-sand) 7%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 3px 3px;
+}
+
+.ambient-glow-brass {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--c-brass) 22%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.ambient-glow-emerald {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--c-glow-emerald) 14%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+}

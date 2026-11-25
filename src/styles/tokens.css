@@ -1,0 +1,27 @@
+:root {
+  --c-ink: #0b0f0d;
+  --c-forest-900: #1f2a1f;
+  --c-forest-600: #3e5a3f;
+  --c-sage: #8ca98c;
+  --c-sand: #d9c7a3;
+  --c-brass: #b08d57;
+  --c-glow-emerald: #3fbf9a;
+
+  --shadow-brutal: 4px 4px 0 0 var(--c-forest-600);
+  --shadow-brutal-lg: 8px 8px 0 0 var(--c-forest-600);
+  --shadow-brutal-brass: 4px 4px 0 0 var(--c-brass);
+}
+
+@theme {
+  --color-ink: var(--c-ink);
+  --color-forest-900: var(--c-forest-900);
+  --color-forest-600: var(--c-forest-600);
+  --color-sage: var(--c-sage);
+  --color-sand: var(--c-sand);
+  --color-brass: var(--c-brass);
+  --color-glow-emerald: var(--c-glow-emerald);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
