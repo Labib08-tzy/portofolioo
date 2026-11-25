@@ -91,12 +91,16 @@ Definisikan sebagai CSS variables di `src/styles/tokens.css` dan petakan ke Tail
 
 ### 4.1 Hero: cursor swarm (WAJIB DIPERTAHANKAN)
 
-- Canvas 2D berisi banyak kursor kecil yang bergerak sebagai swarm.
-- Urutan: swarm berkeliaran → berkumpul membentuk teks **"LABIB"** → lalu "menyusun" antarmuka (judul, role, navigasi muncul).
-- Swarm bereaksi pada pergerakan mouse/touch (tertarik atau menghindar, pilih satu dan konsisten).
-- Warna kursor memakai token palet (utama `--c-sand`, sebagian `--c-brass`).
-- Performa: gunakan `requestAnimationFrame`, hentikan loop saat tab tidak aktif atau hero keluar viewport (`IntersectionObserver`), batasi jumlah partikel berdasar ukuran layar (mobile lebih sedikit), perhatikan `devicePixelRatio`.
-- Fallback: jika `prefers-reduced-motion: reduce`, tampilkan teks "LABIB" statis tanpa swarm. Di mobile low-end, kurangi jumlah partikel atau pakai versi statis.
+- Canvas 2D full-bleed (`min-height: 100svh`, termasuk di belakang navbar) berisi pecahan-pecahan kursor panah kecil yang tersebar di seluruh hero dan hidup.
+- **Tanpa pembentukan teks "LABIB"**: partikel bergerak ambient dengan *wander* halus + *boids* ringan (separation, alignment, cohesion lemah) memakai spatial grid agar tidak $O(n^2)$, dan wrap di tepi layar.
+- Interaksi mouse/touch yang jelas:
+  - Hover/gerak pointer: menolak partikel dalam radius ~140px dengan gaya halus.
+  - Tekan dan tahan (`pointerdown`): menarik partikel membentuk pusaran/kerumunan mengikuti pointer.
+  - Lepas (`pointerup`): menyebar kembali dengan ledakan kecil.
+  - Partikel cepat meninggalkan jejak (trail) tipis yang memudar.
+- Warna kursor memakai token palet (`--c-sand`, `--c-brass`, `--c-sage`) dengan opasitas bervariasi untuk kedalaman.
+- Performa: `requestAnimationFrame` dengan delta time, berhenti saat tab tidak aktif atau hero keluar viewport (`IntersectionObserver`), jumlah partikel adaptif (~220 desktop, ~140 tablet, ~80 mobile), `devicePixelRatio` maks 2, resize dengan debounce.
+- Fallback: jika `prefers-reduced-motion: reduce`, tampilkan partikel statis tanpa gerak dan tanpa interaksi.
 
 ### 4.2 Animasi sumber (GIF hasil konversi)
 
@@ -112,49 +116,32 @@ Definisikan sebagai CSS variables di `src/styles/tokens.css` dan petakan ke Tail
 - Transisi antar section halus; tidak ada animasi yang memblokir interaksi.
 - Semua animasi **wajib** menghormati `prefers-reduced-motion` (matikan atau ganti dengan fade sederhana).
 
-### 4.4 Eye Scan: scroll menggerakkan frame + reveal informasi (WAJIB)
+### 4.4 Eye Scan: scroll menggerakkan frame + HUD futuristik layar penuh (WAJIB)
 
-Teknik mengikuti tutorial referensi: animasi diubah menjadi urutan gambar, lalu posisi scroll dipetakan ke nomor frame. Terasa seperti video yang bisa di-scrub, padahal hanya gambar yang berganti. Scroll ke atas membalik animasinya.
+Teknik mengikuti tutorial referensi: animasi diubah menjadi urutan gambar, lalu posisi scroll dipetakan ke nomor frame. Terasa seperti video yang bisa di-scrub, padahal hanya gambar yang bisa berganti. Scroll ke atas membalik animasinya.
 
-Adegan scan mata **sudah ada di dalam frame** (sinar scan melintas, lalu mata menyala). Jangan menambah garis scan buatan di atasnya.
-
-**Alur (satu scroll track, `SCAN_END_FRAME = 73`):**
+**Alur (satu scroll track `400vh` desktop / `290vh` mobile, `SCAN_END_FRAME = 73`):**
 
 | Progress scroll | Yang terjadi |
 |---|---|
-| 0-65% | Frame 1 sampai 73 berganti mengikuti scroll: menoleh, HUD muncul, scan, mata menyala |
-| 65-75% | Tahan di frame 73 (mata menyala); opsional zoom sangat pelan; label mono kecil "SCAN COMPLETE" |
-| 75-100% | Panel informasi tentang Abi muncul bertahap (stagger) |
+| 0–65% | Frame 1 sampai 73 berganti mengikuti scroll; busur bar data dekoratif di belakang kepala naik bertahap |
+| 50–68% | Sinar scan horizontal (`--c-brass` di atas emerald) menyapu sosok dari atas ke bawah SEKALI dengan label `SCANNING...` 0–100% |
+| 65–100% | Tahan di frame 73 (mata menyala) + lencana `IDENTITY VERIFIED` |
+| 70–90% | 3 callout skill (`FRONTEND`, `BACKEND`, `MOBILE`) dengan garis penunjuk SVG tergambar bertahap tanpa menutupi wajah |
+| 80–100% | Kartu HUD identitas kaca muncul bertahap di sisi kanan (desktop) atau bawah gambar (mobile) |
 
-Frame 74-97 (mata menutup, berbalik) **tidak dipakai** kecuali opsi transisi keluar disetujui (lihat pertanyaan terbuka). Setelah 100%, sticky dilepas dan halaman lanjut ke section berikutnya.
+Frame 74–97 **tidak dipakai**. Setelah 100%, sticky dilepas dan halaman lanjut ke section berikutnya.
 
 **Aset frame:**
-1. Set yang dipakai: `frames-halus-hijau` (97 frame WebP, 431x378 px, total sekitar 2 MB). Ekstrak ke `public/frames/` dengan nama `frame-0001.webp` sampai `frame-0097.webp`.
-2. Nama file wajib berurutan tanpa lompatan.
-3. Jika perlu membuat ulang dari sumber lain: `ffmpeg -i sumber.mp4 -vf "fps=24,scale=1280:-2" -c:v libwebp -quality 75 public/frames/frame-%04d.webp`.
-4. Konfigurasi di `src/data/site.ts`: `TOTAL_FRAMES = 97`, `SCAN_END_FRAME = 73`, `frameSrc(i)`. Jangan hardcode angka ini di komponen.
-5. Resolusi sumber rendah. Jika ada versi lebih tajam, ganti set frame tanpa mengubah kode.
+1. Set yang dipakai: 97 frame WebP **862x756 px** (rasio 431:378) di `public/frames/` (`frame-0001.webp` sampai `frame-0097.webp`).
+2. Konfigurasi di `src/data/site.ts`: `TOTAL_FRAMES = 97`, `SCAN_END_FRAME = 73`, `FRAME_WIDTH = 862`, `FRAME_HEIGHT = 756`, `frameSrc(i)`.
 
-**Tampilan:**
-- Gambar **tidak** dibentangkan layar penuh (akan buram). Tampilkan di tengah sebagai bingkai: lebar `min(90vw, 720px)`, rasio asli 431:378, border 1px `--c-forest-600`, bayangan keras offset ala brutalist.
-- Latar section memakai cahaya ambient (amber di satu sisi, emerald di sisi lain) dan tekstur noise halus agar blur tidak terlihat.
-- Desktop: panel info di sebelah kanan bingkai. Mobile: panel di bawah bingkai. Panel tidak boleh menutupi wajah.
-
-**Implementasi (Vite + React + Framer Motion):**
-- Container scroll track `height: 400vh` (mobile 250-300vh). Di dalamnya elemen `position: sticky; top: 0; height: 100vh` berisi bingkai canvas dan panel info.
-- `useScroll({ target: containerRef, offset: ["start start", "end end"] })` menghasilkan `scrollYProgress`.
-- `useTransform(scrollYProgress, [0, 0.65], [0, SCAN_END_FRAME - 1])` menghasilkan indeks frame (0-based). Bulatkan saat menggambar.
-- Gambar frame ke `<canvas>` lewat `requestAnimationFrame`. **Indeks frame tidak boleh disimpan di React state**; pakai MotionValue supaya tidak rerender setiap scroll.
-- Opsional: `useSpring` pada progres untuk memperhalus. Setel stiffness/damping agar tidak terasa tertinggal.
-- Canvas mengikuti `devicePixelRatio`; jaga rasio aspek bingkai.
-- Preload semua frame ke memori (`Image` + `decode()`) sebelum animasi aktif (lihat 4.5). Jangan memuat frame sambil scroll.
-- Panel info mulai muncul saat progres melewati 0.75, dikendalikan `useTransform` agar ikut mundur saat scroll balik. Styling brutalist: border `--c-forest-600`, surface `--c-forest-900` semi-transparan, label mono. Isi dari `profileHud` di `site.ts`: nama, role, sekolah, 3-5 skill utama, 1 pencapaian utama (Juara 3 LKS Web Technology), bio singkat (`TODO`), tombol **Hubungi** dan **Lihat Project**.
-- Posisi: setelah Hero, sebelum About (`TODO: konfirmasi`).
-
-**Aksesibilitas dan fallback:**
-- Seluruh teks panel ada di DOM sebagai teks asli dan terbaca screen reader. Canvas dekoratif (`aria-hidden`).
-- `prefers-reduced-motion`: tanpa sticky dan scroll track; tampilkan frame 73 statis dengan panel sudah terlihat.
-- Mobile: track lebih pendek, uji FPS di perangkat nyata. Untuk perangkat low-end, pakai setiap frame ke-2.
+**Tampilan layar penuh:**
+- Section sticky mengisi `100svh x 100vw`, background `--c-ink` dengan glow ambient, **tanpa bingkai kartu, border, maupun bayangan offset**.
+- Sosok (canvas) diskalakan setinggi `100svh` di tengah; tepi gambar dilebur ke background dengan CSS `mask-image` radial.
+- Canvas internal mengikuti ukuran tampil × `devicePixelRatio` (maks 2) dengan `imageSmoothingEnabled = true` dan `imageSmoothingQuality = "high"`, ditambah overlay scanline halus, noise film grain, dan vignette.
+- Seluruh lapisan HUD dikendalikan `scrollYProgress` lewat `useTransform` sehingga ikut mundur saat scroll balik. Busur bar data murni dekoratif tanpa angka/nilai.
+- Aksesibilitas: seluruh teks callout dan panel ada di DOM sebagai teks asli; elemen dekoratif `aria-hidden`. `prefers-reduced-motion`: tanpa sticky dan scroll track, tampilkan frame 73 statis dengan seluruh callout dan panel sudah terlihat.
 
 ### 4.5 Preloader dan animasi landing
 
@@ -170,13 +157,14 @@ Frame 74-97 (mata menutup, berbalik) **tidak dipakai** kecuali opsi transisi kel
 
 ## 5. Struktur Halaman dan Konten
 
-Navigasi tetap (sticky): Home, About, Skills, Projects, Achievements, Experience, Contact. Mobile: menu hamburger/overlay. Tombol **Unduh CV** terlihat di nav atau hero.
+Navigasi tetap (`fixed` di atas): Home, About, Skills, Projects, Achievements, Experience, Contact. Tersembunyi (`translateY(-100%)`) saat scroll turun melewati ~80px, muncul kembali saat scroll naik, di paling atas, atau saat fokus keyboard berada di dalam navbar. Menyorot link section yang aktif. Mobile: menu hamburger/overlay. Tombol **Unduh CV** terlihat di nav.
 
 ### 5.1 Hero
-- Swarm → "LABIB", role "Creative Developer / Full-Stack Developer", satu kalimat positioning (`TODO: tulis`), 2 CTA: **Lihat Project** (brass, pill) dan **Hubungi Saya** (outline).
+- Full-bleed (`100svh`) di atas canvas swarm boids.
+- Headline display raksasa bertumpuk: `CREATIVE` / `FULL-STACK` / `DEVELOPER` (campuran solid `--c-sand` dan outline), satu kalimat positioning (`TODO`), 2 CTA pill (**Lihat Project** brass, **Hubungi Saya** outline), chip sekolah & LKS, marquee stack nyata, dan elemen HUD sudut (crosshair, koordinat pointer, jam WIB, penghitung partikel, indikator SCROLL, `01 / 07`).
 
 ### 5.1b Eye Scan
-- Section scroll track sesuai bagian 4.4: urutan frame → mata → scan → HUD informasi tentang Abi.
+- Section scroll track layar penuh sesuai bagian 4.4: urutan frame 862x756 tanpa bingkai + mask-image + HUD futuristik (frame readout, busur bar data dekoratif, garis scan tunggal, 3 callout skill dengan garis penunjuk, dan kartu HUD identitas).
 
 ### 5.2 About
 - 2–3 paragraf singkat: siapa, belajar apa di RPL, apa yang dicari (`TODO` sesuai target).
@@ -325,8 +313,9 @@ Kerjakan berurutan; setiap fase harus bisa dijalankan (`npm run dev`) dan di-com
 ## 11. Kriteria Penerimaan
 
 - [ ] Semua warna berasal dari token; tidak ada hex di komponen.
-- [ ] Swarm membentuk "LABIB" dan menyusun UI; berhenti saat di luar viewport.
-- [ ] Frame berganti mulus mengikuti scroll (tanpa lag setelah preload), berhenti di frame 73 (mata menyala), lalu panel informasi muncul; scroll balik membalik animasinya.
+- [ ] Swarm kursor boids full-bleed di hero tanpa teks "LABIB", merespons hover/tekan/lepas, berhenti saat di luar viewport.
+- [ ] Navbar fixed tersembunyi saat scroll turun (> 80px), muncul saat scroll naik atau fokus keyboard di dalam, dan menyorot section aktif.
+- [ ] Eye Scan layar penuh tanpa bingkai, frame 862x756 berganti mulus mengikuti scroll hingga frame 73, HUD (busur bar, garis scan, 3 callout skill, kartu identitas) muncul bertahap dan ikut mundur saat scroll balik.
 - [ ] Preloader tampil sampai semua frame termuat; konten baru muncul setelah itu.
 - [ ] Teks HUD terbaca screen reader; saat reduced-motion tampil statis tanpa pin.
 - [ ] Bingkai gambar tidak terdistorsi dan panel tidak menutupi wajah pada 360px, 768px, dan 1280px.
