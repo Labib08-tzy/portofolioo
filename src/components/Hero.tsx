@@ -140,18 +140,63 @@ export function Hero() {
             </span>
           </div>
 
-          <motion.h1
-            initial={reducedMotion ? false : { opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0.1 }}
-            className="font-display text-[clamp(2.65rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.92] tracking-tighter"
-          >
-            <span className="block text-sand">CREATIVE</span>
-            <span className="text-outline-sand block">FULL-STACK</span>
-            <span className="block text-sand">
-              DEVELOPER<span className="text-brass">.</span>
+          <h1 className="font-display text-[clamp(2.65rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.92] tracking-tighter">
+            <motion.span
+              initial={reducedMotion ? false : { opacity: 0, y: 34 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: reducedMotion ? 0 : 0.65,
+                delay: 0.08,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              whileHover={reducedMotion ? undefined : { x: 8 }}
+              className="pointer-events-auto block w-fit text-sand transition-opacity duration-200 hover:opacity-90"
+            >
+              <span className={reducedMotion ? "block" : "hero-float-a block"}>
+                CREATIVE
+              </span>
+            </motion.span>
+
+            <motion.span
+              initial={reducedMotion ? false : { opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: reducedMotion ? 0 : 0.7,
+                delay: 0.22,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              whileHover={reducedMotion ? undefined : { x: 10 }}
+              className="pointer-events-auto block w-fit"
+            >
+              <span
+                className={`text-outline-sand block ${
+                  reducedMotion ? "" : "hero-parallax-x"
+                }`}
+              >
+                FULL-STACK
+              </span>
+            </motion.span>
+
+            <span className="block overflow-hidden">
+              <motion.span
+                initial={
+                  reducedMotion ? false : { opacity: 0, y: "100%", scale: 0.94 }
+                }
+                animate={{ opacity: 1, y: "0%", scale: 1 }}
+                transition={{
+                  duration: reducedMotion ? 0 : 0.75,
+                  delay: 0.36,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                whileHover={reducedMotion ? undefined : { x: 8 }}
+                className="pointer-events-auto block w-fit origin-left text-sand transition-opacity duration-200 hover:opacity-90"
+              >
+                <span className={reducedMotion ? "block" : "hero-float-b block"}>
+                  DEVELOPER<span className="text-brass">.</span>
+                </span>
+              </motion.span>
             </span>
-          </motion.h1>
+          </h1>
 
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, y: 14 }}
