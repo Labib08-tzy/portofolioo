@@ -1,7 +1,7 @@
 export const TOTAL_FRAMES = 97;
 export const SCAN_END_FRAME = 73;
-export const FRAME_WIDTH = 431;
-export const FRAME_HEIGHT = 378;
+export const FRAME_WIDTH = 862;
+export const FRAME_HEIGHT = 756;
 
 export function frameSrc(index: number): string {
   const clamped = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index)));
