@@ -113,6 +113,17 @@
   );
 }
 
+.about-photo-mask {
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%),
+    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%),
+    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+  mask-composite: intersect;
+}
+
 .ambient-glow-brass {
   background: radial-gradient(
     circle,
