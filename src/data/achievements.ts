@@ -30,3 +30,4 @@ export const ACHIEVEMENTS: Achievement[] = [
     kind: "certificate",
   },
 ];
+

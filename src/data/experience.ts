@@ -27,3 +27,4 @@ export const EXPERIENCE_ITEMS: ExperienceItem[] = [
       "Mengikuti kompetisi pengembangan web tingkat kabupaten dan meraih peringkat Juara 3 pada bidang Web Technology.",
   },
 ];
+

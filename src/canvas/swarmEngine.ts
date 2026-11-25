@@ -105,3 +105,4 @@ export function drawCursorShape(
   ctx.fill();
   ctx.restore();
 }
+

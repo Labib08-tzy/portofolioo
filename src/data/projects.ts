@@ -73,3 +73,4 @@ export const PROJECTS: Project[] = [
     stack: ["TODO: Stack yang digunakan"],
   },
 ];
+

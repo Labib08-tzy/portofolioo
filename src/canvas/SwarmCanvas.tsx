@@ -206,3 +206,4 @@ export function SwarmCanvas({ text, active, onFormed }: SwarmCanvasProps) {
     />
   );
 }
+

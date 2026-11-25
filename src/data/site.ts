@@ -76,3 +76,4 @@ export const TECH_CREDITS = [
   "Framer Motion",
   "GSAP",
 ];
+

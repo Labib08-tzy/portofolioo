@@ -21,3 +21,4 @@ export const SKILL_GROUPS: SkillGroup[] = [
     items: ["Git", "Vercel", "TODO: Tools lain"],
   },
 ];
+

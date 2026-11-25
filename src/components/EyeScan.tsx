@@ -322,3 +322,4 @@ function EyeScanInteractive({ frames }: { frames: HTMLImageElement[] }) {
     </section>
   );
 }
+
