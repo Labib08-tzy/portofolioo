@@ -115,12 +115,50 @@
 
 .about-photo-mask {
   -webkit-mask-image:
-    linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%),
-    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+    radial-gradient(
+      ellipse 64% 62% at 50% 42%,
+      black 26%,
+      rgba(0, 0, 0, 0.85) 44%,
+      rgba(0, 0, 0, 0.35) 62%,
+      transparent 78%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 24%,
+      black 68%,
+      transparent 98%
+    ),
+    linear-gradient(
+      to right,
+      transparent 0%,
+      black 24%,
+      black 76%,
+      transparent 100%
+    );
   -webkit-mask-composite: source-in;
   mask-image:
-    linear-gradient(to bottom, transparent 0%, black 18%, black 78%, transparent 100%),
-    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%);
+    radial-gradient(
+      ellipse 64% 62% at 50% 42%,
+      black 26%,
+      rgba(0, 0, 0, 0.85) 44%,
+      rgba(0, 0, 0, 0.35) 62%,
+      transparent 78%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      black 24%,
+      black 68%,
+      transparent 98%
+    ),
+    linear-gradient(
+      to right,
+      transparent 0%,
+      black 24%,
+      black 76%,
+      transparent 100%
+    );
   mask-composite: intersect;
 }
 

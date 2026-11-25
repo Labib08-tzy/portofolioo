@@ -79,53 +79,51 @@ export function About() {
           </div>
 
           <div className="about-reveal lg:col-span-5">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden bg-ink">
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden">
               {/* Subtle green neon ambient glow behind portrait */}
               <div
                 aria-hidden="true"
-                className="ambient-glow-emerald pointer-events-none absolute inset-0 scale-110 blur-2xl"
+                className="ambient-glow-emerald pointer-events-none absolute inset-4 scale-105 blur-3xl"
               />
 
-              {/* Seamless masked photo or placeholder */}
-              <div className="about-photo-mask relative h-full w-full">
-                {SITE_INFO.profilePhoto ? (
-                  <img
-                    src={SITE_INFO.profilePhoto}
-                    alt={`Foto profil ${SITE_INFO.fullName}`}
-                    loading="lazy"
-                    className="h-full w-full object-cover object-center"
-                  />
-                ) : (
-                  <div className="flex h-full w-full flex-col items-center justify-center bg-forest-900/55 p-6 text-center">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full border border-forest-600/80 bg-ink/80 font-display text-2xl font-bold text-brass shadow-[0_0_28px_var(--c-glow-emerald)]">
-                      ML
-                    </div>
-                    <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-sage">
-                      Foto Profil (Opsional)
-                    </p>
-                    <p className="mt-2 max-w-xs text-sm text-sage">
-                      TODO: Tambahkan foto formal atau potret diri jika ingin ditampilkan.
-                    </p>
+              {/* Seamless multi-directional CSS masked portrait */}
+              {SITE_INFO.profilePhoto ? (
+                <img
+                  src={SITE_INFO.profilePhoto}
+                  alt={`Foto profil ${SITE_INFO.fullName}`}
+                  loading="lazy"
+                  className="about-photo-mask relative z-10 h-full w-full object-cover object-center"
+                />
+              ) : (
+                <div className="about-photo-mask relative z-10 flex h-full w-full flex-col items-center justify-center p-6 text-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full border border-forest-600/80 bg-ink/80 font-display text-2xl font-bold text-brass shadow-[0_0_28px_var(--c-glow-emerald)]">
+                    ML
                   </div>
-                )}
-              </div>
+                  <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-sage">
+                    Foto Profil (Opsional)
+                  </p>
+                  <p className="mt-2 max-w-xs text-sm text-sage">
+                    TODO: Tambahkan foto formal atau potret diri jika ingin ditampilkan.
+                  </p>
+                </div>
+              )}
 
-              {/* Soft 4-side gradient blending into --c-ink */}
+              {/* Wide 4-side soft gradient fades into --c-ink */}
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-ink via-ink/60 to-transparent"
+                className="pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-gradient-to-b from-ink via-ink/70 to-transparent"
               />
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-ink via-ink/65 to-transparent"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 bg-gradient-to-t from-ink via-ink/75 to-transparent"
               />
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-ink via-ink/55 to-transparent"
+                className="pointer-events-none absolute inset-y-0 left-0 z-20 w-24 bg-gradient-to-r from-ink via-ink/70 to-transparent"
               />
               <div
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-ink via-ink/55 to-transparent"
+                className="pointer-events-none absolute inset-y-0 right-0 z-20 w-24 bg-gradient-to-l from-ink via-ink/70 to-transparent"
               />
             </div>
           </div>
