@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { EyeScan } from "./components/EyeScan";
 import { Hero } from "./components/Hero";
 import { Nav } from "./components/Nav";
 import { Preloader } from "./components/Preloader";
@@ -8,7 +9,7 @@ import { useReducedMotion } from "./hooks/useReducedMotion";
 
 export function App() {
   const reducedMotion = useReducedMotion();
-  const { progress, status, failedCount, dismissError } =
+  const { frames, progress, status, failedCount, dismissError } =
     useFramePreloader(reducedMotion);
 
   const isReady = status === "ready";
@@ -39,6 +40,7 @@ export function App() {
 
           <main id="main-content" tabIndex={-1}>
             <Hero />
+            <EyeScan frames={frames} />
           </main>
         </>
       ) : null}
