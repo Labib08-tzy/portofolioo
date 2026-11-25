@@ -1,113 +1,224 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { SwarmCanvas } from "../canvas/SwarmCanvas";
 import { PillButton } from "./ui/PillButton";
-import { SITE_INFO } from "../data/site";
+import { SITE_INFO, profileHud } from "../data/site";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+
+const HERO_MARQUEE_STACK = [
+  "React",
+  "TypeScript",
+  "Tailwind CSS",
+  "Laravel",
+  "PHP",
+  "MySQL",
+  "Flutter",
+  "GSAP",
+  "Framer Motion",
+];
+
+function Crosshair({ className }: { className: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`pointer-events-none absolute h-3.5 w-3.5 ${className}`}
+    >
+      <span className="absolute top-1/2 left-0 h-px w-full -translate-y-1/2 bg-forest-600" />
+      <span className="absolute top-0 left-1/2 h-full w-px -translate-x-1/2 bg-forest-600" />
+    </span>
+  );
+}
 
 export function Hero() {
   const reducedMotion = useReducedMotion();
-  const [isLowEnd] = useState(() => {
-    if (typeof navigator === "undefined") return false;
-    return (
-      typeof navigator.hardwareConcurrency === "number" &&
-      navigator.hardwareConcurrency <= 2
-    );
-  });
+  const coordsRef = useRef<HTMLSpanElement | null>(null);
+  const clockRef = useRef<HTMLSpanElement | null>(null);
+  const countRef = useRef<HTMLSpanElement | null>(null);
 
-  const useStaticHero = reducedMotion || isLowEnd;
-  const [uiVisible, setUiVisible] = useState(useStaticHero);
+  const handlePointerReadout = useCallback((x: number, y: number) => {
+    if (coordsRef.current) {
+      coordsRef.current.textContent = `X:${String(x).padStart(4, "0")} // Y:${String(y).padStart(4, "0")}`;
+    }
+  }, []);
+
+  const handleCountChange = useCallback((count: number) => {
+    if (countRef.current) {
+      countRef.current.textContent = `SWARM: ${count} UNITS`;
+    }
+  }, []);
 
   useEffect(() => {
-    if (useStaticHero) {
-      setUiVisible(true);
-      return;
-    }
-    // Safety fallback so UI always appears even if canvas callback is delayed
-    const timer = window.setTimeout(() => setUiVisible(true), 1900);
-    return () => window.clearTimeout(timer);
-  }, [useStaticHero]);
+    const updateClock = () => {
+      if (!clockRef.current) return;
+      const formatted = new Intl.DateTimeFormat("id-ID", {
+        timeZone: "Asia/Jakarta",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(new Date());
+      clockRef.current.textContent = `${formatted} WIB`;
+    };
 
-  const handleSwarmFormed = useCallback(() => {
-    setUiVisible(true);
+    updateClock();
+    const timer = window.setInterval(updateClock, 1000);
+    return () => window.clearInterval(timer);
   }, []);
 
   return (
     <section
       id="home"
-      className="relative flex min-h-[calc(100vh-57px)] flex-col justify-between overflow-hidden border-b border-forest-600 bg-ink bg-grid-pattern"
+      className="relative flex min-h-[100svh] flex-col justify-between overflow-hidden border-b border-forest-600 bg-ink bg-grid-pattern"
     >
-      {/* Ambient glows (decor only) */}
+      {/* Full-bleed Cursor Swarm Canvas (including behind fixed navbar) */}
+      <div className="absolute inset-0 z-0">
+        <SwarmCanvas
+          reducedMotion={reducedMotion}
+          onPointerReadout={handlePointerReadout}
+          onCountChange={handleCountChange}
+        />
+      </div>
+
+      {/* Ambient glows & subtle noise */}
       <div
         aria-hidden="true"
-        className="ambient-glow-brass pointer-events-none absolute -bottom-32 -left-32 h-[420px] w-[420px] rounded-full blur-3xl"
+        className="ambient-glow-brass pointer-events-none absolute -bottom-36 -left-36 z-0 h-[520px] w-[520px] rounded-full blur-3xl"
       />
       <div
         aria-hidden="true"
-        className="ambient-glow-emerald pointer-events-none absolute -top-28 -right-28 h-[420px] w-[420px] rounded-full blur-3xl"
+        className="ambient-glow-emerald pointer-events-none absolute -top-32 -right-32 z-0 h-[520px] w-[520px] rounded-full blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="bg-noise-subtle pointer-events-none absolute inset-0 z-0"
       />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-between px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+      {/* Corner registration crosshairs */}
+      <Crosshair className="top-16 left-4 sm:left-6" />
+      <Crosshair className="top-16 right-4 sm:right-6" />
+      <Crosshair className="bottom-4 left-4 sm:left-6" />
+      <Crosshair className="right-4 bottom-4 sm:right-6" />
+
+      {/* Foreground Content */}
+      <div className="pointer-events-none relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-between px-4 pt-24 pb-8 sm:px-6 lg:px-8">
+        {/* Top HUD strip */}
         <motion.div
-          initial={useStaticHero ? false : { opacity: 0, y: -10 }}
+          initial={reducedMotion ? false : { opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: useStaticHero ? 0 : 0.45 }}
-          className="flex flex-wrap items-center justify-between gap-3 border-b border-forest-600/70 pb-4 font-mono text-xs uppercase tracking-[0.18em] text-sage"
+          transition={{ duration: reducedMotion ? 0 : 0.45 }}
+          className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs uppercase tracking-[0.18em] text-sage"
         >
-          <span>{SITE_INFO.fullName}</span>
-          <span className="inline-flex items-center gap-2 rounded-full border border-forest-600 bg-forest-900 px-3 py-1 text-sand">
-            <span className="h-2 w-2 rounded-full bg-brass" aria-hidden="true" />
-            {SITE_INFO.school}
-          </span>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="rounded-full border border-forest-600 bg-forest-900/80 px-3 py-1 text-brass">
+              01 / 07
+            </span>
+            <span ref={countRef} aria-hidden="true" className="hidden sm:inline">
+              SWARM: -- UNITS
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <span
+              ref={clockRef}
+              aria-hidden="true"
+              className="rounded-full border border-forest-600 bg-forest-900/80 px-3 py-1 text-sand"
+            >
+              --:--:-- WIB
+            </span>
+          </div>
         </motion.div>
 
-        {/* Swarm or Static Display Title */}
-        <div className="relative my-6 flex min-h-[240px] flex-1 items-center justify-center sm:min-h-[320px]">
-          {useStaticHero ? (
-            <h1 className="text-center font-display text-[clamp(4.25rem,16vw,12rem)] font-bold leading-none tracking-tighter text-sand">
-              {SITE_INFO.brand}
-            </h1>
-          ) : (
-            <>
-              <h1 className="sr-only">{SITE_INFO.brand}</h1>
-              <div className="h-[260px] w-full sm:h-[340px] lg:h-[380px]">
-                <SwarmCanvas
-                  text={SITE_INFO.brand}
-                  active={!useStaticHero}
-                  onFormed={handleSwarmFormed}
-                />
-              </div>
-            </>
-          )}
+        {/* Center Stacked Display Headline + Chips + CTAs */}
+        <div className="my-8 space-y-6">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="inline-flex items-center gap-2 rounded-full border border-forest-600 bg-forest-900/90 px-3.5 py-1 font-mono text-xs text-sand">
+              <span className="h-2 w-2 rounded-full bg-brass" aria-hidden="true" />
+              {SITE_INFO.school} - RPL
+            </span>
+            <span className="inline-flex items-center rounded-full border border-brass/70 bg-ink/85 px-3.5 py-1 font-mono text-xs text-brass">
+              {profileHud.achievement.replace(" (Tingkat Kabupaten)", "")}
+            </span>
+          </div>
+
+          <motion.h1
+            initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.55, delay: 0.1 }}
+            className="font-display text-[clamp(2.65rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.92] tracking-tighter"
+          >
+            <span className="block text-sand">CREATIVE</span>
+            <span className="text-outline-sand block">FULL-STACK</span>
+            <span className="block text-sand">
+              DEVELOPER<span className="text-brass">.</span>
+            </span>
+          </motion.h1>
+
+          <motion.div
+            initial={reducedMotion ? false : { opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: reducedMotion ? 0 : 0.5, delay: 0.25 }}
+            className="grid gap-6 pt-2 md:grid-cols-12 md:items-end"
+          >
+            <div className="md:col-span-7">
+              <p className="max-w-xl bg-ink/55 px-1 text-base text-sand/90 backdrop-blur-[2px] sm:text-lg">
+                {SITE_INFO.positioning}
+              </p>
+            </div>
+
+            <div className="pointer-events-auto flex flex-wrap items-center gap-3 md:col-span-5 md:justify-end">
+              <PillButton href="#projects" variant="primary">
+                Lihat Project
+              </PillButton>
+              <PillButton href="#contact" variant="outline">
+                Hubungi Saya
+              </PillButton>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Assembled Hero UI */}
-        <motion.div
-          initial={useStaticHero ? false : { opacity: 0, y: 20 }}
-          animate={uiVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: useStaticHero ? 0 : 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="grid gap-6 border-t border-forest-600/80 pt-6 md:grid-cols-12 md:items-end"
-        >
-          <div className="md:col-span-7">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-brass">
-              {SITE_INFO.role}
-            </p>
-            <p className="mt-2 max-w-xl text-base text-sage sm:text-lg">
-              {SITE_INFO.positioning}
-            </p>
+        {/* Bottom HUD + Marquee */}
+        <div className="space-y-4">
+          <div className="flex items-end justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-sage">
+            <span ref={coordsRef} aria-hidden="true">
+              X:0000 // Y:0000
+            </span>
+
+            <div aria-hidden="true" className="flex items-center gap-2.5">
+              <span className="[writing-mode:vertical-rl]">SCROLL</span>
+              <span className="relative h-10 w-px overflow-hidden bg-forest-600">
+                {reducedMotion ? (
+                  <span className="block h-full w-full bg-brass" />
+                ) : (
+                  <motion.span
+                    animate={{ y: ["-100%", "100%"] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 1.6,
+                      ease: "easeInOut",
+                    }}
+                    className="block h-1/2 w-full bg-brass"
+                  />
+                )}
+              </span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 md:col-span-5 md:justify-end">
-            <PillButton href="#projects" variant="primary">
-              Lihat Project
-            </PillButton>
-            <PillButton href="#contact" variant="outline">
-              Hubungi Saya
-            </PillButton>
+          {/* Endless Stack Marquee */}
+          <div
+            aria-label="Teknologi utama"
+            className="pointer-events-auto overflow-hidden border-y border-forest-600/80 bg-forest-900/75 py-2.5 backdrop-blur-sm"
+          >
+            <div className="animate-marquee flex w-max items-center gap-6 whitespace-nowrap font-mono text-xs uppercase tracking-[0.2em] text-sand">
+              {[...HERO_MARQUEE_STACK, ...HERO_MARQUEE_STACK].map((item, idx) => (
+                <span key={`${item}-${idx}`} className="inline-flex items-center gap-6">
+                  <span>{item}</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" />
+                </span>
+              ))}
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
 }
-

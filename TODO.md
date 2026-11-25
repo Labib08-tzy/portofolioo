@@ -36,3 +36,4 @@ Daftar seluruh placeholder `TODO` yang saat ini ada di kode dan perlu diisi deng
 ## 7. Domain & SEO (`index.html`)
 - [ ] **Domain Kustom:** Tambahkan `<meta property="og:url" ...>` setelah domain Vercel/kustom aktif.
 - [ ] **Gambar Open Graph:** Buat gambar OG (mis. `public/og-image.png`) dan tambahkan tag `og:image` serta `twitter:image` di `index.html`.
+

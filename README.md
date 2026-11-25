@@ -63,3 +63,4 @@ Seluruh konten dibaca dari `src/data/` tanpa hardcode di komponen:
 - **Preloader & Sesi:** Semua 97 frame di-preload dengan batas konkurensi 8 (`Image` + `decode()`), menyimpan penanda di `sessionStorage` agar kunjungan ulang dalam sesi yang sama tampil lebih cepat.
 - **Posisi Eye Scan:** Ditempatkan tepat setelah Hero dan sebelum About sesuai alur naratif PRD (intro → identitas visual & HUD → detail diri & karya).
 - **Target Audiens Default:** Difokuskan ke peluang magang/kerja web sesuai default PRD sampai pemilik mengisi preferensi final di `src/data/site.ts`.
+
