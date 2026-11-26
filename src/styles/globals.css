@@ -231,7 +231,7 @@
 }
 
 .skill-circle {
-  border: 1px solid color-mix(in srgb, var(--brand-color) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand-color) 45%, transparent);
   transition:
     transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
     border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -240,21 +240,36 @@
 
 .skill-circle-trigger:hover .skill-circle,
 .skill-circle-trigger:focus-visible .skill-circle {
-  transform: translateY(-4px);
+  transform: scale(1.2);
   border-color: var(--brand-color);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--brand-color) 35%, transparent);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--brand-color) 35%, transparent);
 }
 
-.skill-circle-trigger:hover .skill-circle-icon,
-.skill-circle-trigger:focus-visible .skill-circle-icon {
-  transform: scale(1.1);
+.skill-circle-trigger:hover .skill-label,
+.skill-circle-trigger:focus-visible .skill-label {
+  color: var(--c-sand);
+}
+
+.skills-stage-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 14%,
+    black 86%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 14%,
+    black 86%,
+    transparent 100%
+  );
 }
 
 @media (prefers-reduced-motion: reduce) {
   .skill-circle-trigger:hover .skill-circle,
-  .skill-circle-trigger:focus-visible .skill-circle,
-  .skill-circle-trigger:hover .skill-circle-icon,
-  .skill-circle-trigger:focus-visible .skill-circle-icon {
+  .skill-circle-trigger:focus-visible .skill-circle {
     transform: none !important;
   }
 }
