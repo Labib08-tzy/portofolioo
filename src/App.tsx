@@ -1,13 +1,12 @@
 import { motion } from "framer-motion";
 import { About } from "./components/About";
-import { Achievements } from "./components/Achievements";
 import { Contact } from "./components/Contact";
 import { Experience } from "./components/Experience";
 import { EyeScan } from "./components/EyeScan";
+import { FolderShowcase } from "./components/FolderShowcase";
 import { Hero } from "./components/Hero";
 import { Nav } from "./components/Nav";
 import { Preloader } from "./components/Preloader";
-import { Projects } from "./components/Projects";
 import { Skills } from "./components/Skills";
 import { SITE_INFO } from "./data/site";
 import { useFramePreloader } from "./hooks/useFramePreloader";
@@ -49,8 +48,7 @@ export function App() {
             <EyeScan frames={frames} />
             <About />
             <Skills />
-            <Projects />
-            <Achievements />
+            <FolderShowcase />
             <Experience />
             <Contact />
           </main>
