@@ -1,6 +1,4 @@
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { motion } from "framer-motion";
 import {
   siFlutter,
   siFramer,
@@ -18,8 +16,6 @@ import {
 import { SKILL_GROUPS } from "../data/skills";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { SectionHeading } from "./ui/SectionHeading";
-
-gsap.registerPlugin(ScrollTrigger);
 
 const SKILL_ICON_MAP: Record<string, SimpleIcon> = {
   React: siReact,
@@ -39,37 +35,21 @@ function isTodoItem(name: string): boolean {
   return name.trim().toUpperCase().startsWith("TODO");
 }
 
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
 export function Skills() {
-  const sectionRef = useRef<HTMLElement | null>(null);
   const reducedMotion = useReducedMotion();
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el || reducedMotion) return;
-
-    const ctx = gsap.context(() => {
-      gsap.from(".skill-tile", {
-        y: 20,
-        opacity: 0,
-        duration: 0.55,
-        stagger: 0.05,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: el,
-          start: "top 80%",
-          once: true,
-        },
-      });
-    }, el);
-
-    return () => ctx.revert();
-  }, [reducedMotion]);
 
   return (
     <section
-      ref={sectionRef}
       id="skills"
-      className="border-b border-forest-600 bg-ink py-20 sm:py-28"
+      className="scroll-mt-20 border-b border-forest-600 bg-ink py-20 sm:py-28"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
@@ -81,7 +61,9 @@ export function Skills() {
 
         <div className="space-y-10">
           {SKILL_GROUPS.map((group) => {
-            const visibleItems = group.items.filter((item) => !isTodoItem(item));
+            const visibleItems = group.items.filter(
+              (item) => !isTodoItem(item)
+            );
             if (visibleItems.length === 0) return null;
 
             return (
@@ -94,13 +76,27 @@ export function Skills() {
                   className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
                   aria-label={group.category}
                 >
-                  {visibleItems.map((item) => {
+                  {visibleItems.map((item, idx) => {
                     const icon = SKILL_ICON_MAP[item];
                     return (
-                      <li
+                      <motion.li
                         key={item}
                         tabIndex={0}
-                        className="skill-tile group flex aspect-square flex-col items-center justify-center gap-3 border border-forest-600 bg-forest-900 p-4 text-center shadow-[4px_4px_0_0_var(--c-forest-600)] transition-all duration-200 hover:-translate-y-1 hover:border-brass focus-visible:-translate-y-1 focus-visible:border-brass focus-visible:outline-2 focus-visible:outline-brass focus-visible:outline-offset-3"
+                        initial={
+                          reducedMotion ? false : { opacity: 0, y: 14 }
+                        }
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.15 }}
+                        transition={
+                          reducedMotion
+                            ? { duration: 0 }
+                            : {
+                                duration: 0.35,
+                                delay: Math.min(idx * 0.04, 0.2),
+                                ease: "easeOut",
+                              }
+                        }
+                        className="group flex aspect-square flex-col items-center justify-center gap-3 border border-forest-600 bg-forest-900 p-4 text-center shadow-[4px_4px_0_0_var(--c-forest-600)] transition-all duration-200 hover:-translate-y-1 hover:border-brass focus-visible:-translate-y-1 focus-visible:border-brass focus-visible:outline-2 focus-visible:outline-brass focus-visible:outline-offset-3"
                       >
                         {icon ? (
                           <svg
@@ -110,11 +106,18 @@ export function Skills() {
                           >
                             <path d={icon.path} />
                           </svg>
-                        ) : null}
+                        ) : (
+                          <span
+                            aria-hidden="true"
+                            className="flex h-10 w-10 items-center justify-center border border-forest-600 bg-ink font-mono text-sm font-bold text-sage transition-colors duration-200 group-hover:border-brass group-hover:text-brass group-focus-visible:border-brass group-focus-visible:text-brass sm:h-11 sm:w-11"
+                          >
+                            {getInitials(item)}
+                          </span>
+                        )}
                         <span className="font-mono text-xs text-sand">
                           {item}
                         </span>
-                      </li>
+                      </motion.li>
                     );
                   })}
                 </ul>
