@@ -1,7 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE_INFO } from "../data/site";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { SectionHeading } from "./ui/SectionHeading";
 
@@ -9,7 +11,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function About() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const photoContainerRef = useRef<HTMLDivElement | null>(null);
   const reducedMotion = useReducedMotion();
+  const isTouch = useMediaQuery("(hover: none)");
+
+  const [revealed, setRevealed] = useState(false);
+  const [primaryError, setPrimaryError] = useState(false);
+  const [hoverError, setHoverError] = useState(false);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -34,11 +42,37 @@ export function About() {
     return () => ctx.revert();
   }, [reducedMotion]);
 
+  // Preload hover photo when About enters viewport
+  useEffect(() => {
+    const target = photoContainerRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          const preload = new Image();
+          preload.src = SITE_INFO.aboutHoverPhoto;
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleToggle = () => {
+    if (isTouch) {
+      setRevealed((prev) => !prev);
+    }
+  };
+
   return (
     <section
       ref={sectionRef}
       id="about"
-      className="border-b border-forest-600 bg-ink py-20 sm:py-28"
+      className="scroll-mt-20 border-b border-forest-600 bg-ink py-20 sm:py-28"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
@@ -65,7 +99,10 @@ export function About() {
               </p>
               <dl className="mt-4 grid gap-4 sm:grid-cols-2">
                 {SITE_INFO.aboutFacts.map((fact) => (
-                  <div key={fact.label} className="border-l border-forest-600 pl-3">
+                  <div
+                    key={fact.label}
+                    className="border-l border-forest-600 pl-3"
+                  >
                     <dt className="font-mono text-xs uppercase tracking-wider text-sage">
                       {fact.label}
                     </dt>
@@ -78,54 +115,82 @@ export function About() {
             </div>
           </div>
 
-          <div className="about-reveal lg:col-span-5">
-            <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden">
-              {/* Subtle green neon ambient glow behind portrait */}
-              <div
-                aria-hidden="true"
-                className="ambient-glow-emerald pointer-events-none absolute inset-4 scale-105 blur-3xl"
-              />
-
-              {/* Seamless multi-directional CSS masked portrait */}
-              {SITE_INFO.profilePhoto ? (
+          <div ref={photoContainerRef} className="about-reveal lg:col-span-5">
+            <button
+              type="button"
+              aria-pressed={revealed}
+              aria-label={`Foto ${SITE_INFO.fullName}. ${
+                isTouch ? "Ketuk" : "Arahkan kursor atau fokus"
+              } untuk mengganti tampilan foto.`}
+              onClick={handleToggle}
+              onMouseEnter={isTouch ? undefined : () => setRevealed(true)}
+              onMouseLeave={isTouch ? undefined : () => setRevealed(false)}
+              onFocus={() => setRevealed(true)}
+              onBlur={() => setRevealed(false)}
+              className="group relative mx-auto block aspect-[4/5] w-full max-w-md overflow-hidden border border-forest-600 bg-forest-900 text-left shadow-[8px_8px_0_0_var(--c-forest-600)] transition-colors duration-200 hover:border-brass focus-visible:border-brass focus-visible:outline-2 focus-visible:outline-brass focus-visible:outline-offset-4"
+            >
+              {/* Primary Photo */}
+              {!primaryError ? (
                 <img
-                  src={SITE_INFO.profilePhoto}
-                  alt={`Foto profil ${SITE_INFO.fullName}`}
+                  src={SITE_INFO.aboutPhoto}
+                  alt={SITE_INFO.fullName}
                   loading="lazy"
-                  className="about-photo-mask relative z-10 h-full w-full object-cover object-center"
+                  onError={() => setPrimaryError(true)}
+                  className="h-full w-full object-cover object-center"
                 />
               ) : (
-                <div className="about-photo-mask relative z-10 flex h-full w-full flex-col items-center justify-center p-6 text-center">
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full border border-forest-600/80 bg-ink/80 font-display text-2xl font-bold text-brass shadow-[0_0_28px_var(--c-glow-emerald)]">
+                <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-forest-900 via-ink to-forest-900 p-6 text-center">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full border border-forest-600 bg-ink font-display text-2xl font-bold text-brass">
                     ML
                   </div>
                   <p className="mt-4 font-mono text-xs uppercase tracking-[0.2em] text-sage">
-                    Foto Profil (Opsional)
-                  </p>
-                  <p className="mt-2 max-w-xs text-sm text-sage">
-                    TODO: Tambahkan foto formal atau potret diri jika ingin ditampilkan.
+                    Foto belum tersedia
                   </p>
                 </div>
               )}
 
-              {/* Wide 4-side soft gradient fades into --c-ink */}
-              <div
+              {/* Hover / Tap Reveal Photo */}
+              {!hoverError ? (
+                <motion.img
+                  src={SITE_INFO.aboutHoverPhoto}
+                  alt={SITE_INFO.aboutHoverAlt}
+                  loading="lazy"
+                  onError={() => setHoverError(true)}
+                  initial={false}
+                  animate={
+                    reducedMotion
+                      ? { opacity: revealed ? 1 : 0 }
+                      : {
+                          opacity: revealed ? 1 : 0,
+                          clipPath: revealed
+                            ? "circle(78% at 50% 50%)"
+                            : "circle(0% at 50% 50%)",
+                          scale: revealed ? 1.03 : 1,
+                        }
+                  }
+                  transition={
+                    reducedMotion
+                      ? { duration: 0.15 }
+                      : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+                  }
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+                />
+              ) : null}
+
+              {/* Corner Mono Labels */}
+              <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 top-0 z-20 h-28 bg-gradient-to-b from-ink via-ink/70 to-transparent"
-              />
-              <div
+                className="pointer-events-none absolute top-3 left-3 rounded-full border border-forest-600 bg-ink/85 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-sand backdrop-blur-xs"
+              >
+                PORTRAIT // 01
+              </span>
+              <span
                 aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 h-32 bg-gradient-to-t from-ink via-ink/75 to-transparent"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-0 z-20 w-24 bg-gradient-to-r from-ink via-ink/70 to-transparent"
-              />
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 right-0 z-20 w-24 bg-gradient-to-l from-ink via-ink/70 to-transparent"
-              />
-            </div>
+                className="pointer-events-none absolute right-3 bottom-3 rounded-full border border-forest-600 bg-ink/85 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-brass backdrop-blur-xs"
+              >
+                HOVER / TAP
+              </span>
+            </button>
           </div>
         </div>
       </div>

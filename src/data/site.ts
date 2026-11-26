@@ -39,7 +39,9 @@ export const SITE_INFO = {
   school: "SMK Umar Fatah Rembang",
   major: "Rekayasa Perangkat Lunak (RPL)",
   cvUrl: "/cv/cv-labib.pdf",
-  profilePhoto: undefined as string | undefined,
+  aboutPhoto: "/images/about-me.webp",
+  aboutHoverPhoto: "/images/about-hover.webp",
+  aboutHoverAlt: "TODO: deskripsi foto",
   aboutParagraphs: [
     "Saya Mohammad Labib Nayla Fahmi (Abi), siswa jurusan Rekayasa Perangkat Lunak (RPL) di SMK Umar Fatah Rembang yang berfokus pada pengembangan web dan aplikasi mobile.",
     "Di RPL saya mempelajari dasar pemrograman, pengembangan antarmuka web modern, pengelolaan basis data, serta pembangunan aplikasi Android untuk kebutuhan nyata.",
