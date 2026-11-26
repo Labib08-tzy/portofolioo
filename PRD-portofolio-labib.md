@@ -168,15 +168,15 @@ Navigasi tetap (`fixed` di atas): Home, About, Skills, Projects, Achievements, E
 
 ### 5.2 About
 - 2–3 paragraf singkat: siapa, belajar apa di RPL, apa yang dicari (`TODO` sesuai target).
-- Foto (opsional) `TODO`.
+- Foto interaktif (`public/images/about-me.webp` dan `public/images/about-hover.webp`) dalam bingkai brutalist `4:5` yang berganti saat hover/fokus (desktop) atau ketuk (touch) lewat transisi crossfade + `clip-path` reveal. Alt foto kedua dari `SITE_INFO.aboutHoverAlt` (`TODO`).
 - Fakta ringkas: SMK Umar Fatah Rembang, jurusan RPL, domisili `TODO`.
 
 ### 5.3 Skills
-- Kelompokkan: Frontend (React, TypeScript, Tailwind, GSAP, Framer Motion), Backend (PHP, Laravel, MySQL), Mobile (Flutter), Tools (Git, Vercel, dll. `TODO`).
-- Tampilkan sebagai chip pill, bukan bar persentase (persentase tidak kredibel).
+- Kelompokkan: Frontend (React, TypeScript, Tailwind CSS, GSAP, Framer Motion), Backend (PHP, Laravel, MySQL), Mobile (Flutter), Tools (Git, Vercel; item `TODO` tidak dirender di UI).
+- Tampilkan sebagai grid ubin persegi berisi logo resmi (`simple-icons`, monokrom `--c-sage`, berubah `--c-brass` saat hover/fokus) dan label mono di bawahnya, tanpa bar persentase.
 
 ### 5.4 Projects
-Setiap project tampil sebagai **jendela browser mengambang** (title bar dengan tiga titik, URL palsu/nama project, area preview). Klik membuka detail/studi kasus.
+Ditampilkan bersama Achievements sebagai dua **folder interaktif** berdampingan (`PROJECTS` dan `SERTIFIKAT & PENCAPAIAN`) dengan label jumlah file, mini-card mengintip saat hover/fokus/ketuk pertama, serta panel overlay layar penuh (`layoutId`) saat dibuka yang berisi grid item dan detail studi kasus.
 
 Data memakai skema di bagian 7. Label status wajib jujur: `Selesai` atau `Dalam pengembangan`.
 
@@ -193,7 +193,7 @@ Data memakai skema di bagian 7. Label status wajib jujur: `Selesai` atau `Dalam 
 Setiap studi kasus berisi: masalah, peran Abi, solusi, stack, hasil/pembelajaran, link demo, link repo, 1–3 screenshot. Item `Dalam pengembangan` cukup versi ringkas.
 
 ### 5.5 Achievements
-- Kartu: **Juara 3 LKS Web Technology** (tingkat kabupaten, tahun `TODO`) + 2 sertifikat (`TODO` nama, penerbit, tahun, link verifikasi jika ada).
+- Disajikan dalam folder interaktif **SERTIFIKAT & PENCAPAIAN**: **Juara 3 LKS Web Technology** (tingkat kabupaten, tahun `TODO`) + 2 sertifikat (`TODO` nama, penerbit, tahun, link verifikasi jika ada).
 - Dirancang agar mudah menambah item baru lewat data file.
 
 ### 5.6 Experience

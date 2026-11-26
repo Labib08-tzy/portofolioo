@@ -7,7 +7,7 @@ Daftar seluruh placeholder `TODO` yang saat ini ada di kode dan perlu diisi deng
 - [ ] **Domisili:** Isi `Domisili` pada `SITE_INFO.aboutFacts`.
 - [ ] **Target Audiens:** Pilih dan tulis target utama (`magang/kerja`, `freelance`, atau `kuliah`) pada `SITE_INFO.aboutParagraphs` dan `SITE_INFO.aboutFacts`.
 - [ ] **Bio HUD Eye Scan:** Isi `profileHud.bio` dengan bio singkat.
-- [ ] **Foto Profil (Opsional):** Jika ingin menampilkan foto di section About, ganti placeholder pada `src/components/About.tsx`.
+- [ ] **Alt Text Foto Kedua About:** Isi `SITE_INFO.aboutHoverAlt` di `src/data/site.ts` dengan deskripsi singkat foto kedua (`public/images/about-hover.webp`).
 
 ## 2. Kontak & CV (`src/data/site.ts` & `public/cv/`)
 - [ ] **Email:** Isi `CONTACT_INFO.email`.

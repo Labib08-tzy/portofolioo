@@ -62,6 +62,9 @@ Seluruh konten dibaca dari `src/data/` tanpa hardcode di komponen:
 - **Swarm Hero (Boids + Spatial Grid):** Partikel kursor tersebar full-bleed dengan gerak *wander* + *boids* ringan menggunakan spatial grid ($O(n)$), menolak pointer saat hover, membentuk pusaran saat ditekan-tahan, menyebar saat dilepas, dan meninggalkan jejak tipis saat cepat.
 - **Navbar Hide-on-Scroll:** Navbar `fixed` bersembunyi saat scroll turun melewati 80px, muncul kembali saat scroll naik atau saat fokus keyboard berada di dalamnya, serta menyorot section aktif via `IntersectionObserver`.
 - **Eye Scan Layar Penuh:** Menggunakan frame 862×756 yang dilebur dengan CSS `mask-image` tanpa bingkai kartu, dilengkapi busur bar dekoratif, garis scan tunggal (50–68%), 3 callout skill dengan garis penunjuk SVG (70–90%), dan kartu HUD identitas kaca (80–100%).
+- **Skills Grid Logo (`simple-icons`):** Menampilkan ikon resmi CC0 dari paket `simple-icons` dalam grid ubin brutalist tanpa bar persentase; item berawalan `TODO` di `src/data/skills.ts` disaring dari UI.
+- **Projects & Achievements sebagai Folder Interaktif:** Kedua direktori disajikan sebagai folder manila dengan mini-card yang mengintip saat hover/fokus (ketuk pertama pada perangkat sentuh) dan membesar menjadi panel dialog layar penuh (`layoutId`, focus trap, tombol `Kembali`, dan pemulihan fokus ke tombol folder).
+- **About Foto Interaktif:** Memakai `about-me.webp` dan `about-hover.webp` dengan rasio `4:5` terkunci, transisi `clip-path` + crossfade saat hover/fokus/tap, serta preload gambar kedua saat masuk viewport.
 - **Preloader & Sesi:** Semua 97 frame di-preload dengan batas konkurensi 8 (`Image` + `decode()`), menyimpan penanda di `sessionStorage` agar kunjungan ulang dalam sesi yang sama tampil lebih cepat.
 - **Target Audiens Default:** Difokuskan ke peluang magang/kerja web sesuai default PRD sampai pemilik mengisi preferensi final di `src/data/site.ts`.
 
