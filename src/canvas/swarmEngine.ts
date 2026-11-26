@@ -18,6 +18,7 @@ export interface SwarmParticle {
   driftVx: number;
   driftVy: number;
   size: number;
+  introSize: number;
   baseSize: number;
   colorIndex: 0 | 1 | 2;
   opacity: number;
@@ -64,15 +65,28 @@ export function readSwarmPalette(): SwarmPalette {
 }
 
 export function getParticleCountForWidth(width: number): number {
-  if (width < 640) return 80;
+  if (width < 640) return 70;
   if (width < 1024) return 140;
   return 220;
 }
 
 export function getIntroTargetCountForWidth(width: number): number {
-  if (width < 640) return 380;
-  if (width < 1024) return 600;
-  return 900;
+  if (width < 640) return 620;
+  if (width < 1024) return 720;
+  return 1000;
+}
+
+/** Ukuran kursor saat membentuk huruf: kecil di layar kecil agar huruf tetap terbaca. */
+export function getIntroSizeForWidth(width: number): number {
+  if (width < 640) return 2.9;
+  if (width < 1024) return 3.8;
+  return 4.7;
+}
+
+function getSampleSteps(width: number): { solid: number; outline: number } {
+  if (width < 640) return { solid: 3, outline: 2 };
+  if (width < 1024) return { solid: 4, outline: 3 };
+  return { solid: 5, outline: 3 };
 }
 
 export function sampleHeadlineTargets(
@@ -106,7 +120,7 @@ export function sampleHeadlineTargets(
     const drawY = line.top + line.height * 0.52;
 
     if (line.outline) {
-      ctx.lineWidth = 2.2;
+      ctx.lineWidth = canvasWidth < 640 ? 1.6 : 2.2;
       ctx.strokeStyle = "white";
       ctx.strokeText(line.text, drawX, drawY);
     } else {
@@ -123,7 +137,8 @@ export function sampleHeadlineTargets(
     if (regionW <= 0 || regionH <= 0) return;
 
     const data = ctx.getImageData(minX, minY, regionW, regionH).data;
-    const step = line.outline ? 3 : 5;
+    const steps = getSampleSteps(canvasWidth);
+    const step = line.outline ? steps.outline : steps.solid;
 
     for (let y = 0; y < regionH; y += step) {
       for (let x = 0; x < regionW; x += step) {
@@ -239,7 +254,8 @@ export function createIntroParticles(
       flightMs,
       driftVx: (Math.random() - 0.5) * 14,
       driftVy: (Math.random() - 0.5) * 14,
-      size: 5.4,
+      size: getIntroSizeForWidth(width),
+      introSize: getIntroSizeForWidth(width),
       baseSize: 4 + (i % 4) * 1.4,
       colorIndex: target ? target.colorIndex : defaultColor,
       opacity: target ? 0.85 : baseOpacity,
@@ -288,6 +304,7 @@ export function createAmbientParticles(
       driftVx: 0,
       driftVy: 0,
       size: 4 + (i % 4) * 1.4,
+      introSize: 4 + (i % 4) * 1.4,
       baseSize: 4 + (i % 4) * 1.4,
       colorIndex,
       opacity: baseOpacity,
@@ -330,7 +347,7 @@ export function stepIntroTween(
       p.y = p.startY + p.driftVy * sec * 0.35;
       p.prevX = p.x;
       p.prevY = p.y;
-      p.size = 4.6;
+      p.size = p.introSize * 0.85;
       p.opacity = 0.72;
       p.angle = Math.atan2(p.ty - p.y, p.tx - p.x) + Math.PI / 2;
       continue;
@@ -363,7 +380,7 @@ export function stepIntroTween(
       p.prevX = x;
       p.prevY = y;
       p.angle = Math.atan2(dydt, dxdt) + Math.PI / 2;
-      p.size = 5.4;
+      p.size = p.introSize;
       p.opacity = 0.95;
       continue;
     }
@@ -377,7 +394,7 @@ export function stepIntroTween(
     p.y = p.ty + (Math.random() - 0.5) * 0.8;
     p.prevX = p.x;
     p.prevY = p.y;
-    p.size = 5.5 * tapPulse;
+    p.size = p.introSize * tapPulse;
     p.angle = LANDED_ANGLE;
     p.opacity = 1;
   }

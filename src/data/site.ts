@@ -1,11 +1,61 @@
-export const TOTAL_FRAMES = 97;
-export const SCAN_END_FRAME = 73;
-export const FRAME_WIDTH = 862;
-export const FRAME_HEIGHT = 756;
+export interface FrameSet {
+  dir: string;
+  total: number;
+  scanEnd: number;
+  w: number;
+  h: number;
+}
+
+export const FRAME_SETS = {
+  desktop: {
+    dir: "/frames",
+    total: 97,
+    scanEnd: 73,
+    w: 862,
+    h: 756,
+  },
+  mobile: {
+    dir: "/frames-mobile",
+    total: 49,
+    scanEnd: 37,
+    w: 560,
+    h: 491,
+  },
+} as const satisfies Record<string, FrameSet>;
+
+/**
+ * Pilih set frame sekali saat halaman dimuat: viewport <= 768px, mode hemat data,
+ * jaringan 2g/3g, atau deviceMemory <= 4 memakai set ringan (mobile).
+ */
+function shouldUseMobileFrames(): boolean {
+  if (typeof window === "undefined") return false;
+  const nav = navigator as Navigator & {
+    deviceMemory?: number;
+    connection?: { saveData?: boolean; effectiveType?: string };
+  };
+  const narrow = window.matchMedia("(max-width: 768px)").matches;
+  const saveData = nav.connection?.saveData === true;
+  const slowNet =
+    nav.connection?.effectiveType === "2g" ||
+    nav.connection?.effectiveType === "3g";
+  const lowMemory =
+    typeof nav.deviceMemory === "number" && nav.deviceMemory <= 4;
+  return narrow || saveData || slowNet || lowMemory;
+}
+
+const ACTIVE_FRAMES: FrameSet = shouldUseMobileFrames()
+  ? FRAME_SETS.mobile
+  : FRAME_SETS.desktop;
+
+export const IS_MOBILE_FRAMES = ACTIVE_FRAMES === FRAME_SETS.mobile;
+export const TOTAL_FRAMES = ACTIVE_FRAMES.total;
+export const SCAN_END_FRAME = ACTIVE_FRAMES.scanEnd;
+export const FRAME_WIDTH = ACTIVE_FRAMES.w;
+export const FRAME_HEIGHT = ACTIVE_FRAMES.h;
 
 export function frameSrc(index: number): string {
-  const clamped = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index)));
-  return `/frames/frame-${String(clamped).padStart(4, "0")}.webp`;
+  const clamped = Math.max(1, Math.min(ACTIVE_FRAMES.total, Math.round(index)));
+  return `${ACTIVE_FRAMES.dir}/frame-${String(clamped).padStart(4, "0")}.webp`;
 }
 
 export interface ProfileHud {

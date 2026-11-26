@@ -508,7 +508,6 @@ export function About() {
         duration: 0.65,
         stagger: 0.1,
         ease: "power2.out",
-        once: true,
         scrollTrigger: {
           trigger: el,
           start: "top 80%",

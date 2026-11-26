@@ -10,6 +10,7 @@ import { SKILL_GROUPS } from "../data/skills";
 import {
   FRAME_HEIGHT,
   FRAME_WIDTH,
+  IS_MOBILE_FRAMES,
   SCAN_END_FRAME,
   TOTAL_FRAMES,
   frameSrc,
@@ -19,7 +20,10 @@ import { useReducedMotion } from "../hooks/useReducedMotion";
 import { PillButton } from "./ui/PillButton";
 
 interface EyeScanProps {
-  frames: HTMLImageElement[];
+  frames: Array<CanvasImageSource | undefined>;
+  allLoaded?: boolean;
+  bgProgress?: number;
+  onFrameFocus?: (frameIndex: number) => void;
 }
 
 interface SharpRect {
@@ -116,12 +120,43 @@ function createScratch(): CanvasScratch {
   };
 }
 
+function getSourceSize(img: CanvasImageSource): { w: number; h: number } {
+  if (img instanceof HTMLImageElement) {
+    return { w: img.naturalWidth, h: img.naturalHeight };
+  }
+  if ("width" in img && "height" in img) {
+    return {
+      w: typeof img.width === "number" ? img.width : 0,
+      h: typeof img.height === "number" ? img.height : 0,
+    };
+  }
+  return { w: 0, h: 0 };
+}
+
+function findNearestFrame(
+  frames: Array<CanvasImageSource | undefined>,
+  targetIdx: number
+): CanvasImageSource | undefined {
+  if (frames[targetIdx]) return frames[targetIdx];
+  for (let offset = 1; offset < frames.length; offset++) {
+    if (targetIdx - offset >= 0 && frames[targetIdx - offset]) {
+      return frames[targetIdx - offset];
+    }
+    if (targetIdx + offset < frames.length && frames[targetIdx + offset]) {
+      return frames[targetIdx + offset];
+    }
+  }
+  return undefined;
+}
+
 function renderEyeScanFrame(
   canvas: HTMLCanvasElement,
-  img: HTMLImageElement | undefined,
+  img: CanvasImageSource | undefined,
   scratch: CanvasScratch
 ): SharpRect | null {
-  if (!img || !img.naturalWidth) return null;
+  if (!img) return null;
+  const { w: srcW, h: srcH } = getSourceSize(img);
+  if (!srcW || !srcH) return null;
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
@@ -130,7 +165,8 @@ function renderEyeScanFrame(
 
   const vw = rect.width;
   const vh = rect.height;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const maxDpr = vw < 768 || IS_MOBILE_FRAMES ? 1.5 : 2;
+  const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
   const targetW = Math.round(vw * dpr);
   const targetH = Math.round(vh * dpr);
 
@@ -144,7 +180,7 @@ function renderEyeScanFrame(
   ctx.clearRect(0, 0, targetW, targetH);
 
   // 1) Blurred + darkened cover backdrop (two-pass downscale-upscale, Safari-safe)
-  const imgAspect = img.naturalWidth / img.naturalHeight;
+  const imgAspect = srcW / srcH;
   const viewAspect = vw / vh;
   let coverW = targetW;
   let coverH = targetH;
@@ -297,18 +333,18 @@ function SectionEdgeBlends() {
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[20vh] bg-gradient-to-t from-ink via-ink/60 to-transparent"
       />
-      {/* Subtle vignette, scanlines, and film grain */}
+      {/* Subtle vignette, scanlines, and film grain (heavy overlays desktop-only) */}
       <div
         aria-hidden="true"
         className="eye-scan-vignette pointer-events-none absolute inset-0 z-10"
       />
       <div
         aria-hidden="true"
-        className="bg-scanlines-subtle pointer-events-none absolute inset-0 z-10 opacity-30"
+        className="bg-scanlines-subtle pointer-events-none absolute inset-0 z-10 hidden opacity-30 md:block"
       />
       <div
         aria-hidden="true"
-        className="bg-noise-subtle pointer-events-none absolute inset-0 z-10"
+        className="bg-noise-subtle pointer-events-none absolute inset-0 z-10 hidden md:block"
       />
     </>
   );
@@ -414,24 +450,40 @@ function CalloutConnectorSvg({
   );
 }
 
-export function EyeScan({ frames }: EyeScanProps) {
+export function EyeScan({
+  frames,
+  allLoaded = true,
+  bgProgress = 100,
+  onFrameFocus,
+}: EyeScanProps) {
   const reducedMotion = useReducedMotion();
-  const hasFrames = frames.length >= SCAN_END_FRAME;
+  const hasAnyFrame = frames.some(Boolean);
 
-  if (reducedMotion || !hasFrames) {
+  if (reducedMotion || !hasAnyFrame) {
     return <EyeScanStatic frames={frames} />;
   }
 
-  return <EyeScanInteractive frames={frames} />;
+  return (
+    <EyeScanInteractive
+      frames={frames}
+      allLoaded={allLoaded}
+      bgProgress={bgProgress}
+      onFrameFocus={onFrameFocus}
+    />
+  );
 }
 
-function EyeScanStatic({ frames }: { frames: HTMLImageElement[] }) {
+function EyeScanStatic({
+  frames,
+}: {
+  frames: Array<CanvasImageSource | undefined>;
+}) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [sharpRect, setSharpRect] = useState<SharpRect | null>(null);
 
   useEffect(() => {
     const scratch = createScratch();
-    let img = frames[SCAN_END_FRAME - 1];
+    let img = findNearestFrame(frames, SCAN_END_FRAME - 1);
 
     const draw = () => {
       if (!canvasRef.current || !img) return;
@@ -508,7 +560,17 @@ function EyeScanStatic({ frames }: { frames: HTMLImageElement[] }) {
   );
 }
 
-function EyeScanInteractive({ frames }: { frames: HTMLImageElement[] }) {
+function EyeScanInteractive({
+  frames,
+  allLoaded,
+  bgProgress,
+  onFrameFocus,
+}: {
+  frames: Array<CanvasImageSource | undefined>;
+  allLoaded: boolean;
+  bgProgress: number;
+  onFrameFocus?: (frameIndex: number) => void;
+}) {
   const containerRef = useRef<HTMLElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const frameReadoutRef = useRef<HTMLSpanElement | null>(null);
@@ -564,7 +626,8 @@ function EyeScanInteractive({ frames }: { frames: HTMLImageElement[] }) {
     if (!canvas) return;
     const scratch = createScratch();
 
-    const initialRect = renderEyeScanFrame(canvas, frames[0], scratch);
+    const initialImg = findNearestFrame(frames, 0);
+    const initialRect = renderEyeScanFrame(canvas, initialImg, scratch);
     if (initialRect) setSharpRect(initialRect);
     lastDrawnRef.current = 0;
 
@@ -577,8 +640,10 @@ function EyeScanInteractive({ frames }: { frames: HTMLImageElement[] }) {
           0,
           Math.min(SCAN_END_FRAME - 1, Math.round(pendingFrameRef.current))
         );
+        onFrameFocus?.(clamped);
         if (clamped !== lastDrawnRef.current && canvasRef.current) {
-          renderEyeScanFrame(canvasRef.current, frames[clamped], scratch);
+          const source = findNearestFrame(frames, clamped);
+          renderEyeScanFrame(canvasRef.current, source, scratch);
           lastDrawnRef.current = clamped;
           if (frameReadoutRef.current) {
             frameReadoutRef.current.textContent = `FRAME ${String(
@@ -654,7 +719,14 @@ function EyeScanInteractive({ frames }: { frames: HTMLImageElement[] }) {
           aria-hidden="true"
           className="pointer-events-none relative z-20 flex items-center justify-between px-6 pt-6 font-mono text-[11px] uppercase tracking-[0.2em] text-sage sm:px-10 sm:pt-8"
         >
-          <span>SYS.SCAN // 001</span>
+          <div className="flex items-center gap-3">
+            <span>SYS.SCAN // 001</span>
+            {!allLoaded ? (
+              <span className="rounded-full border border-forest-600 bg-forest-900/90 px-2.5 py-0.5 text-[10px] text-brass">
+                MEMUAT ANIMASI {bgProgress}%
+              </span>
+            ) : null}
+          </div>
           <div className="flex items-center gap-4">
             <span ref={frameReadoutRef} className="text-sand">
               FRAME 001/{String(TOTAL_FRAMES).padStart(3, "0")}

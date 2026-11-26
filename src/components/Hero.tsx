@@ -1,8 +1,20 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
-import { SwarmCanvas, type IntroPhase } from "../canvas/SwarmCanvas";
+import type { IntroPhase } from "../canvas/SwarmCanvas";
 import { PillButton } from "./ui/PillButton";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+
+const SwarmCanvas = lazy(() =>
+  import("../canvas/SwarmCanvas").then((m) => ({ default: m.SwarmCanvas }))
+);
 
 const HERO_MARQUEE_STACK = [
   "React",
@@ -83,34 +95,36 @@ export function Hero() {
     >
       {/* Full-bleed Cursor Swarm Canvas (including behind fixed navbar) */}
       <div className="absolute inset-0 z-0">
-        <SwarmCanvas
-          reducedMotion={reducedMotion}
-          lineRefs={lineRefs}
-          onIntroPhase={setIntroPhase}
-          onPointerReadout={handlePointerReadout}
-          onCountChange={handleCountChange}
-        />
+        <Suspense fallback={null}>
+          <SwarmCanvas
+            reducedMotion={reducedMotion}
+            lineRefs={lineRefs}
+            onIntroPhase={setIntroPhase}
+            onPointerReadout={handlePointerReadout}
+            onCountChange={handleCountChange}
+          />
+        </Suspense>
       </div>
 
-      {/* Ambient glows & subtle noise */}
+      {/* Ambient glows & subtle noise (hidden on mobile to reduce GPU/fillrate load) */}
       <div
         aria-hidden="true"
-        className="ambient-glow-brass pointer-events-none absolute -bottom-36 -left-36 z-0 h-[520px] w-[520px] rounded-full blur-3xl"
+        className="ambient-glow-brass pointer-events-none absolute -bottom-36 -left-36 z-0 hidden h-[520px] w-[520px] rounded-full blur-3xl md:block"
       />
       <div
         aria-hidden="true"
-        className="ambient-glow-emerald pointer-events-none absolute -top-32 -right-32 z-0 h-[520px] w-[520px] rounded-full blur-3xl"
+        className="ambient-glow-emerald pointer-events-none absolute -top-32 -right-32 z-0 hidden h-[520px] w-[520px] rounded-full blur-3xl md:block"
       />
       <div
         aria-hidden="true"
-        className="bg-noise-subtle pointer-events-none absolute inset-0 z-0"
+        className="bg-noise-subtle pointer-events-none absolute inset-0 z-0 hidden md:block"
       />
 
-      {/* Corner registration crosshairs */}
-      <Crosshair className="top-16 left-4 sm:left-6" />
-      <Crosshair className="top-16 right-4 sm:right-6" />
-      <Crosshair className="bottom-4 left-4 sm:left-6" />
-      <Crosshair className="right-4 bottom-4 sm:right-6" />
+      {/* Corner registration crosshairs (desktop/tablet) */}
+      <Crosshair className="top-16 left-4 hidden sm:block sm:left-6" />
+      <Crosshair className="top-16 right-4 hidden sm:block sm:right-6" />
+      <Crosshair className="bottom-4 left-4 hidden sm:block sm:left-6" />
+      <Crosshair className="right-4 bottom-4 hidden sm:block sm:right-6" />
 
       {/* Foreground Content */}
       <div className="pointer-events-none relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-between px-4 pt-24 pb-8 sm:px-6 lg:px-8">
@@ -212,11 +226,11 @@ export function Hero() {
           className="space-y-4"
         >
           <div className="flex items-end justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-sage">
-            <span ref={coordsRef} aria-hidden="true">
+            <span ref={coordsRef} aria-hidden="true" className="hidden md:inline">
               X:0000 // Y:0000
             </span>
 
-            <div aria-hidden="true" className="flex items-center gap-2.5">
+            <div aria-hidden="true" className="ml-auto flex items-center gap-2.5">
               <span className="[writing-mode:vertical-rl]">SCROLL</span>
               <span className="relative h-10 w-px overflow-hidden bg-forest-600">
                 {reducedMotion ? (
@@ -236,10 +250,10 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Endless Stack Marquee */}
+          {/* Endless Stack Marquee (desktop/tablet; reduced on mobile) */}
           <div
             aria-label="Teknologi utama"
-            className="pointer-events-auto overflow-hidden border-y border-forest-600/80 bg-forest-900/75 py-2.5 backdrop-blur-sm"
+            className="pointer-events-auto hidden overflow-hidden border-y border-forest-600/80 bg-forest-900/75 py-2.5 backdrop-blur-sm sm:block"
           >
             <div className="animate-marquee flex w-max items-center gap-6 whitespace-nowrap font-mono text-xs uppercase tracking-[0.2em] text-sand">
               {[...HERO_MARQUEE_STACK, ...HERO_MARQUEE_STACK].map((item, idx) => (

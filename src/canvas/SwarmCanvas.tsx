@@ -1,4 +1,5 @@
 import { useEffect, useRef, type RefObject } from "react";
+import { IS_MOBILE_FRAMES } from "../data/site";
 import {
   applyBurstOnRelease,
   createAmbientParticles,
@@ -125,7 +126,8 @@ export function SwarmCanvas({
       const rect = canvas.getBoundingClientRect();
       width = Math.max(1, rect.width);
       height = Math.max(1, rect.height);
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const maxDpr = width < 768 || IS_MOBILE_FRAMES ? 1.5 : 2;
+      dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
 
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
@@ -199,24 +201,23 @@ export function SwarmCanvas({
       const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
       lastTime = now;
 
-      // Low-end FPS guard over first 30 frames (> 28ms avg -> reduce 40% & speed up)
+      // Low-end FPS guard over first 30 frames (> 28ms avg -> skip intro, show headline)
       if (phase === "gather" || phase === "hold") {
         frameCount++;
         dtSum += dt;
         if (frameCount === 30 && dtSum / 30 > 0.028) {
-          let removed = 0;
-          const targetRemove = Math.floor(particles.length * 0.4);
-          for (let i = particles.length - 1; i >= 0 && removed < targetRemove; i--) {
-            if (particles[i].isTemp) {
-              particles.splice(i, 1);
-              removed++;
-            }
+          particles = particles.filter((p) => !p.isTemp);
+          for (let i = 0; i < particles.length; i++) {
+            particles[i].prevX = particles[i].x;
+            particles[i].prevY = particles[i].y;
           }
           reportCount(particles.length);
-          launchSpanMs *= 0.6;
-          flightMaxMs *= 0.6;
-          buildEndMs = launchSpanMs + 80 + flightMaxMs;
-          holdEndMs = buildEndMs + 250;
+          emitPhase("ambient");
+          try {
+            window.sessionStorage.setItem(SESSION_INTRO_KEY, "1");
+          } catch {
+            // Ignore storage errors
+          }
         }
       }
 
@@ -252,6 +253,7 @@ export function SwarmCanvas({
         }
       }
 
+      const isMobileView = width < 768 || IS_MOBILE_FRAMES;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
       drawSwarmParticles(
@@ -259,7 +261,7 @@ export function SwarmCanvas({
         particles,
         palette,
         dpr,
-        phase === "ambient"
+        phase === "ambient" && !isMobileView
       );
 
       rafId = window.requestAnimationFrame(tick);
