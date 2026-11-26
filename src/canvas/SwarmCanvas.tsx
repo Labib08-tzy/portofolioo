@@ -8,7 +8,7 @@ import {
   getParticleCountForWidth,
   readSwarmPalette,
   sampleHeadlineTargets,
-  stepIntroGatherHold,
+  stepIntroTween,
   stepSwarm,
   type HeadlineLineSpec,
   type PointerState,
@@ -65,19 +65,30 @@ export function SwarmCanvas({
       typeof window !== "undefined" &&
       window.sessionStorage.getItem(SESSION_INTRO_KEY) === "1";
 
-    const gatherDuration = isRepeatSession ? 700 : 2400;
-    const holdDuration = isRepeatSession ? 250 : 800;
+    let launchSpanMs = isRepeatSession ? 380 : 1700;
+    let flightMinMs = isRepeatSession ? 320 : 700;
+    let flightMaxMs = isRepeatSession ? 450 : 950;
+    let buildEndMs = launchSpanMs + 120 + flightMaxMs;
+    let holdEndMs = buildEndMs + (isRepeatSession ? 180 : 600);
 
     let phase: IntroPhase = reducedMotion ? "ambient" : "gather";
     let introStart = performance.now();
     let frameCount = 0;
     let dtSum = 0;
+    let lastReportedCount = -1;
 
     const pointer: PointerState = {
       x: -9999,
       y: -9999,
       active: false,
       down: false,
+    };
+
+    const reportCount = (n: number) => {
+      if (n !== lastReportedCount) {
+        lastReportedCount = n;
+        countChangeRef.current?.(n);
+      }
     };
 
     const measureHeadline = (): HeadlineLineSpec[] => {
@@ -127,10 +138,10 @@ export function SwarmCanvas({
 
       if (reducedMotion) {
         particles = createAmbientParticles(normalCount, width, height);
-        countChangeRef.current?.(normalCount);
+        reportCount(normalCount);
         emitPhase("ambient");
         ctx.clearRect(0, 0, width, height);
-        drawSwarmParticles(ctx, particles, palette);
+        drawSwarmParticles(ctx, particles, palette, dpr, false);
         return;
       }
 
@@ -139,15 +150,22 @@ export function SwarmCanvas({
       const targets = sampleHeadlineTargets(specs, width, height, targetCap);
 
       if (targets.length < 30) {
-        // Fallback: sampling failed, show DOM headline & ambient swarm immediately
         particles = createAmbientParticles(normalCount, width, height);
-        countChangeRef.current?.(normalCount);
+        reportCount(normalCount);
         emitPhase("ambient");
         return;
       }
 
-      particles = createIntroParticles(targets, normalCount, width, height);
-      countChangeRef.current?.(particles.length);
+      particles = createIntroParticles(
+        targets,
+        normalCount,
+        width,
+        height,
+        launchSpanMs,
+        flightMinMs,
+        flightMaxMs
+      );
+      reportCount(particles.length);
       introStart = performance.now();
       phase = "gather";
       phaseCbRef.current?.("gather");
@@ -160,13 +178,16 @@ export function SwarmCanvas({
       } catch {
         // Ignore storage errors
       }
-      // Scatter particles gently outward as they release from letters
+      // Scatter particles outward cleanly without trails
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        p.vx += (Math.random() - 0.5) * 140;
-        p.vy += (Math.random() - 0.5) * 140;
+        const ang = Math.random() * Math.PI * 2;
+        const spd = 65 + Math.random() * 110;
+        p.vx = Math.cos(ang) * spd;
+        p.vy = Math.sin(ang) * spd;
+        p.prevX = p.x;
+        p.prevY = p.y;
       }
-      countChangeRef.current?.(getParticleCountForWidth(width));
     };
 
     const tick = (now: number) => {
@@ -178,41 +199,46 @@ export function SwarmCanvas({
       const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
       lastTime = now;
 
-      // Low-end FPS guard over first 30 frames
+      // Low-end FPS guard over first 30 frames (> 28ms avg -> reduce 40% & speed up)
       if (phase === "gather" || phase === "hold") {
         frameCount++;
         dtSum += dt;
-        if (frameCount === 30 && dtSum / 30 > 0.045) {
-          triggerMelt();
+        if (frameCount === 30 && dtSum / 30 > 0.028) {
+          let removed = 0;
+          const targetRemove = Math.floor(particles.length * 0.4);
+          for (let i = particles.length - 1; i >= 0 && removed < targetRemove; i--) {
+            if (particles[i].isTemp) {
+              particles.splice(i, 1);
+              removed++;
+            }
+          }
+          reportCount(particles.length);
+          launchSpanMs *= 0.6;
+          flightMaxMs *= 0.6;
+          buildEndMs = launchSpanMs + 80 + flightMaxMs;
+          holdEndMs = buildEndMs + 250;
         }
       }
 
       const elapsed = now - introStart;
 
-      if (phase === "gather" && elapsed >= gatherDuration) {
+      if (phase === "gather" && elapsed >= buildEndMs) {
         emitPhase("hold");
-      } else if (
-        phase === "hold" &&
-        elapsed >= gatherDuration + holdDuration
-      ) {
+      } else if (phase === "hold" && elapsed >= holdEndMs) {
         triggerMelt();
-      } else if (
-        phase === "melt" &&
-        elapsed >= gatherDuration + holdDuration + 650
-      ) {
+      } else if (phase === "melt" && elapsed >= holdEndMs + 650) {
+        // Sync prevX/prevY before enabling short ambient trails
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].prevX = particles[i].x;
+          particles[i].prevY = particles[i].y;
+        }
         emitPhase("ambient");
       }
 
       if (phase === "gather" || phase === "hold") {
-        stepIntroGatherHold(
-          particles,
-          elapsed,
-          dt,
-          pointer,
-          phase === "hold"
-        );
+        stepIntroTween(particles, elapsed);
       } else {
-        stepSwarm(
+        const changed = stepSwarm(
           particles,
           width,
           height,
@@ -221,10 +247,20 @@ export function SwarmCanvas({
           grid,
           phase === "melt"
         );
+        if (changed) {
+          reportCount(particles.length);
+        }
       }
 
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      drawSwarmParticles(ctx, particles, palette);
+      drawSwarmParticles(
+        ctx,
+        particles,
+        palette,
+        dpr,
+        phase === "ambient"
+      );
 
       rafId = window.requestAnimationFrame(tick);
     };
@@ -289,7 +325,7 @@ export function SwarmCanvas({
           setupCanvasSize();
           if (reducedMotion) {
             ctx.clearRect(0, 0, width, height);
-            drawSwarmParticles(ctx, particles, palette);
+            drawSwarmParticles(ctx, particles, palette, dpr, false);
           }
         }
       }, 180);
@@ -330,6 +366,7 @@ export function SwarmCanvas({
         setupCanvasSize();
         const normalCount = getParticleCountForWidth(width);
         particles = createAmbientParticles(normalCount, width, height);
+        reportCount(normalCount);
         emitPhase("ambient");
         if (observer) observer.observe(canvas);
         startLoop();

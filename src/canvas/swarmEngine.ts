@@ -5,12 +5,18 @@ export interface SwarmParticle {
   prevY: number;
   vx: number;
   vy: number;
+  startX: number;
+  startY: number;
+  ctrlX: number;
+  ctrlY: number;
   tx: number;
   ty: number;
   hasTarget: boolean;
   isTemp: boolean;
-  staggerMs: number;
-  swirlSign: number;
+  launchMs: number;
+  flightMs: number;
+  driftVx: number;
+  driftVy: number;
   size: number;
   baseSize: number;
   colorIndex: 0 | 1 | 2;
@@ -45,6 +51,7 @@ export interface HeadlineLineSpec {
 export interface SampledTarget {
   x: number;
   y: number;
+  lineIndex: number;
   colorIndex: 0 | 1 | 2;
 }
 
@@ -84,7 +91,7 @@ export function sampleHeadlineTargets(
 
   const allPoints: SampledTarget[] = [];
 
-  for (const line of lines) {
+  lines.forEach((line, lineIndex) => {
     ctx.clearRect(0, 0, offscreen.width, offscreen.height);
     ctx.font = line.font;
     ctx.textBaseline = "middle";
@@ -113,7 +120,7 @@ export function sampleHeadlineTargets(
     const maxY = Math.min(offscreen.height, Math.ceil(line.top + line.height + 16));
     const regionW = maxX - minX;
     const regionH = maxY - minY;
-    if (regionW <= 0 || regionH <= 0) continue;
+    if (regionW <= 0 || regionH <= 0) return;
 
     const data = ctx.getImageData(minX, minY, regionW, regionH).data;
     const step = line.outline ? 3 : 5;
@@ -122,73 +129,122 @@ export function sampleHeadlineTargets(
       for (let x = 0; x < regionW; x += step) {
         const alpha = data[(y * regionW + x) * 4 + 3];
         if (alpha > 128) {
-          const jitterX = (Math.random() - 0.5) * 1.8;
-          const jitterY = (Math.random() - 0.5) * 1.8;
+          const jitterX = (Math.random() - 0.5) * 1.4;
+          const jitterY = (Math.random() - 0.5) * 1.4;
           const colorIndex: 0 | 1 | 2 = line.outline
-            ? Math.random() < 0.8 ? 1 : 0
-            : Math.random() < 0.82 ? 0 : 2;
+            ? Math.random() < 0.82 ? 1 : 0
+            : Math.random() < 0.84 ? 0 : 2;
           allPoints.push({
             x: minX + x + jitterX,
             y: minY + y + jitterY,
+            lineIndex,
             colorIndex,
           });
         }
       }
     }
-  }
+  });
 
-  // Shuffle
-  for (let i = allPoints.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = allPoints[i];
-    allPoints[i] = allPoints[j];
-    allPoints[j] = tmp;
-  }
+  if (allPoints.length === 0) return [];
 
-  return allPoints.slice(0, maxTargets);
+  // Sort top-to-bottom (lineIndex), then left-to-right (x) with slight organic jitter
+  allPoints.sort((a, b) => {
+    if (a.lineIndex !== b.lineIndex) return a.lineIndex - b.lineIndex;
+    return a.x - b.x + (Math.random() - 0.5) * 32;
+  });
+
+  // Evenly downsample if more points than maxTargets so all 3 lines stay balanced
+  if (allPoints.length <= maxTargets) return allPoints;
+  const sampled: SampledTarget[] = [];
+  const stride = allPoints.length / maxTargets;
+  for (let i = 0; i < maxTargets; i++) {
+    sampled.push(allPoints[Math.floor(i * stride)]);
+  }
+  return sampled;
+}
+
+function randomEdgePoint(width: number, height: number): { x: number; y: number } {
+  const side = Math.floor(Math.random() * 4);
+  const margin = 28;
+  switch (side) {
+    case 0: // top
+      return { x: Math.random() * width, y: -margin + Math.random() * 60 };
+    case 1: // right
+      return { x: width + margin - Math.random() * 60, y: Math.random() * height };
+    case 2: // bottom
+      return { x: Math.random() * width, y: height + margin - Math.random() * 60 };
+    default: // left
+      return { x: -margin + Math.random() * 60, y: Math.random() * height };
+  }
 }
 
 export function createIntroParticles(
   targets: SampledTarget[],
   normalCount: number,
   width: number,
-  height: number
+  height: number,
+  launchSpanMs: number,
+  flightMinMs: number,
+  flightMaxMs: number
 ): SwarmParticle[] {
   const total = Math.max(normalCount, targets.length);
   const particles: SwarmParticle[] = [];
+  const targetCount = Math.max(1, targets.length);
 
   for (let i = 0; i < total; i++) {
-    const x = Math.random() * width;
-    const y = Math.random() * height;
-    const wanderAngle = Math.random() * Math.PI * 2;
-    const speed = 28 + Math.random() * 34;
     const target = i < targets.length ? targets[i] : null;
     const isTemp = i >= normalCount;
+    const start = randomEdgePoint(width, height);
+    const tx = target ? target.x : Math.random() * width;
+    const ty = target ? target.y : Math.random() * height;
+
+    // Quadratic Bezier control point offset perpendicular 10%-20% of distance
+    const dx = tx - start.x;
+    const dy = ty - start.y;
+    const dist = Math.hypot(dx, dy) || 1;
+    const nx = -dy / dist;
+    const ny = dx / dist;
+    const curveRatio = (0.1 + Math.random() * 0.1) * (i % 2 === 0 ? 1 : -1);
+    const ctrlX = (start.x + tx) * 0.5 + nx * dist * curveRatio;
+    const ctrlY = (start.y + ty) * 0.5 + ny * dist * curveRatio;
+
+    const launchMs = target
+      ? (i / targetCount) * launchSpanMs + Math.random() * 120
+      : 0;
+    const flightMs =
+      flightMinMs + Math.random() * Math.max(50, flightMaxMs - flightMinMs);
 
     const roll = i % 10;
     const defaultColor: 0 | 1 | 2 = roll < 5 ? 0 : roll < 8 ? 2 : 1;
     const baseOpacity =
       i % 4 === 0 ? 0.24 + Math.random() * 0.18 : 0.55 + Math.random() * 0.35;
+    const wanderAngle = Math.random() * Math.PI * 2;
 
     particles.push({
-      x,
-      y,
-      prevX: x,
-      prevY: y,
-      vx: Math.cos(wanderAngle) * speed,
-      vy: Math.sin(wanderAngle) * speed,
-      tx: target ? target.x : x,
-      ty: target ? target.y : y,
+      x: start.x,
+      y: start.y,
+      prevX: start.x,
+      prevY: start.y,
+      vx: Math.cos(wanderAngle) * 32,
+      vy: Math.sin(wanderAngle) * 32,
+      startX: start.x,
+      startY: start.y,
+      ctrlX,
+      ctrlY,
+      tx,
+      ty,
       hasTarget: target !== null,
       isTemp,
-      staggerMs: Math.random() * 600,
-      swirlSign: i % 2 === 0 ? 1 : -1,
-      size: 5.2,
+      launchMs,
+      flightMs,
+      driftVx: (Math.random() - 0.5) * 14,
+      driftVy: (Math.random() - 0.5) * 14,
+      size: 5.4,
       baseSize: 4 + (i % 4) * 1.4,
       colorIndex: target ? target.colorIndex : defaultColor,
-      opacity: target ? 1 : baseOpacity,
+      opacity: target ? 0.85 : baseOpacity,
       baseOpacity,
-      angle: wanderAngle + Math.PI / 2,
+      angle: Math.atan2(dy, dx) + Math.PI / 2,
       wanderAngle,
     });
   }
@@ -201,82 +257,129 @@ export function createAmbientParticles(
   width: number,
   height: number
 ): SwarmParticle[] {
-  return createIntroParticles([], count, width, height);
+  const particles: SwarmParticle[] = [];
+  for (let i = 0; i < count; i++) {
+    const x = Math.random() * width;
+    const y = Math.random() * height;
+    const wanderAngle = Math.random() * Math.PI * 2;
+    const speed = 28 + Math.random() * 34;
+    const roll = i % 10;
+    const colorIndex: 0 | 1 | 2 = roll < 5 ? 0 : roll < 8 ? 2 : 1;
+    const baseOpacity =
+      i % 4 === 0 ? 0.24 + Math.random() * 0.18 : 0.55 + Math.random() * 0.35;
+
+    particles.push({
+      x,
+      y,
+      prevX: x,
+      prevY: y,
+      vx: Math.cos(wanderAngle) * speed,
+      vy: Math.sin(wanderAngle) * speed,
+      startX: x,
+      startY: y,
+      ctrlX: x,
+      ctrlY: y,
+      tx: x,
+      ty: y,
+      hasTarget: false,
+      isTemp: false,
+      launchMs: 0,
+      flightMs: 0,
+      driftVx: 0,
+      driftVy: 0,
+      size: 4 + (i % 4) * 1.4,
+      baseSize: 4 + (i % 4) * 1.4,
+      colorIndex,
+      opacity: baseOpacity,
+      baseOpacity,
+      angle: wanderAngle + Math.PI / 2,
+      wanderAngle,
+    });
+  }
+  return particles;
 }
 
-export function stepIntroGatherHold(
+function easeOutCubic(t: number): number {
+  const inv = 1 - t;
+  return 1 - inv * inv * inv;
+}
+
+const LANDED_ANGLE = (-20 * Math.PI) / 180;
+
+export function stepIntroTween(
   particles: SwarmParticle[],
-  elapsedMs: number,
-  dt: number,
-  pointer: PointerState,
-  isHoldPhase: boolean
+  elapsedMs: number
 ) {
   for (let i = 0; i < particles.length; i++) {
     const p = particles[i];
+    if (!p.hasTarget) {
+      // Gentle ambient drift for non-target particles
+      const sec = elapsedMs / 1000;
+      p.x = p.startX + p.driftVx * sec;
+      p.y = p.startY + p.driftVy * sec;
+      p.prevX = p.x;
+      p.prevY = p.y;
+      p.angle = Math.atan2(p.driftVy, p.driftVx) + Math.PI / 2;
+      continue;
+    }
+
+    if (elapsedMs < p.launchMs) {
+      // Waiting at edge with slow drift
+      const sec = elapsedMs / 1000;
+      p.x = p.startX + p.driftVx * sec * 0.35;
+      p.y = p.startY + p.driftVy * sec * 0.35;
+      p.prevX = p.x;
+      p.prevY = p.y;
+      p.size = 4.6;
+      p.opacity = 0.72;
+      p.angle = Math.atan2(p.ty - p.y, p.tx - p.x) + Math.PI / 2;
+      continue;
+    }
+
+    const flightElapsed = elapsedMs - p.launchMs;
+    if (flightElapsed < p.flightMs) {
+      // Quadratic Bezier flight from current drifted start to target
+      const rawT = flightElapsed / p.flightMs;
+      const u = easeOutCubic(rawT);
+      const oneMinusU = 1 - u;
+
+      const x =
+        oneMinusU * oneMinusU * p.startX +
+        2 * oneMinusU * u * p.ctrlX +
+        u * u * p.tx;
+      const y =
+        oneMinusU * oneMinusU * p.startY +
+        2 * oneMinusU * u * p.ctrlY +
+        u * u * p.ty;
+
+      // Tangent along Bezier curve
+      const dxdt =
+        2 * oneMinusU * (p.ctrlX - p.startX) + 2 * u * (p.tx - p.ctrlX);
+      const dydt =
+        2 * oneMinusU * (p.ctrlY - p.startY) + 2 * u * (p.ty - p.ctrlY);
+
+      p.x = x;
+      p.y = y;
+      p.prevX = x;
+      p.prevY = y;
+      p.angle = Math.atan2(dydt, dxdt) + Math.PI / 2;
+      p.size = 5.4;
+      p.opacity = 0.95;
+      continue;
+    }
+
+    // Landed: 180ms tap scale (1.0 -> 1.5 -> 1.0), then settle with 0.4px jitter
+    const arrivedMs = flightElapsed - p.flightMs;
+    const tapPulse =
+      arrivedMs < 180 ? 1 + 0.5 * Math.sin((arrivedMs / 180) * Math.PI) : 1;
+
+    p.x = p.tx + (Math.random() - 0.5) * 0.8;
+    p.y = p.ty + (Math.random() - 0.5) * 0.8;
     p.prevX = p.x;
     p.prevY = p.y;
-
-    if (!p.hasTarget) {
-      // Non-target ambient particle
-      p.wanderAngle += (Math.random() - 0.5) * 2 * dt;
-      p.x += Math.cos(p.wanderAngle) * 28 * dt;
-      p.y += Math.sin(p.wanderAngle) * 28 * dt;
-      p.angle = p.wanderAngle + Math.PI / 2;
-      continue;
-    }
-
-    if (elapsedMs < p.staggerMs) {
-      p.wanderAngle += (Math.random() - 0.5) * 2 * dt;
-      p.x += Math.cos(p.wanderAngle) * 34 * dt;
-      p.y += Math.sin(p.wanderAngle) * 34 * dt;
-      p.angle = p.wanderAngle + Math.PI / 2;
-      continue;
-    }
-
-    const dx = p.tx - p.x;
-    const dy = p.ty - p.y;
-    const dist = Math.hypot(dx, dy);
-
-    // Curved/swirling path while far from target, decaying to crisp arrival
-    const swirlWeight = Math.min(1, dist / 180) * 0.42 * p.swirlSign;
-    const fx = dx - dy * swirlWeight;
-    const fy = dy + dx * swirlWeight;
-
-    const springK = isHoldPhase ? 26 : 16;
-    p.vx += fx * springK * dt;
-    p.vy += fy * springK * dt;
-
-    // Gentle pointer repel during intro (radius ~80px)
-    if (pointer.active) {
-      const mdx = p.x - pointer.x;
-      const mdy = p.y - pointer.y;
-      const mDist = Math.hypot(mdx, mdy) || 1;
-      if (mDist < 80) {
-        const push = ((80 - mDist) / 80) * 420;
-        p.vx += (mdx / mDist) * push * dt;
-        p.vy += (mdy / mDist) * push * dt;
-      }
-    }
-
-    p.vx *= 0.82;
-    p.vy *= 0.82;
-    p.x += p.vx;
-    p.y += p.vy;
-
-    if (isHoldPhase && dist < 4) {
-      p.x += (Math.random() - 0.5) * 0.5;
-      p.y += (Math.random() - 0.5) * 0.5;
-    }
-
-    const speed = Math.hypot(p.vx, p.vy);
-    if (dist > 6 && speed > 0.35) {
-      p.angle = Math.atan2(p.vy, p.vx) + Math.PI / 2;
-    } else {
-      p.angle += (-Math.PI / 6 - p.angle) * Math.min(1, dt * 10);
-    }
-
-    p.size += (5.4 - p.size) * Math.min(1, dt * 8);
-    p.opacity += (1 - p.opacity) * Math.min(1, dt * 8);
+    p.size = 5.5 * tapPulse;
+    p.angle = LANDED_ANGLE;
+    p.opacity = 1;
   }
 }
 
@@ -290,20 +393,22 @@ export function stepSwarm(
   pointer: PointerState,
   grid: Map<number, number[]>,
   isMelting: boolean
-) {
-  // Fade temporary extra particles during melt and restore normal baseSize/baseOpacity
+): boolean {
+  let countChanged = false;
+
   if (isMelting || particles.some((p) => p.isTemp)) {
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
       if (p.isTemp) {
-        p.opacity -= dt * 1.45;
+        p.opacity -= dt * 1.55;
         if (p.opacity <= 0.02) {
           particles.splice(i, 1);
+          countChanged = true;
           continue;
         }
       } else {
-        p.size += (p.baseSize - p.size) * Math.min(1, dt * 3);
-        p.opacity += (p.baseOpacity - p.opacity) * Math.min(1, dt * 3);
+        p.size += (p.baseSize - p.size) * Math.min(1, dt * 3.5);
+        p.opacity += (p.baseOpacity - p.opacity) * Math.min(1, dt * 3.5);
       }
     }
   }
@@ -386,8 +491,7 @@ export function stepSwarm(
     if (pointer.active) {
       const dx = p.x - pointer.x;
       const dy = p.y - pointer.y;
-      const distSq = dx * dx + dy * dy;
-      const dist = Math.sqrt(distSq) || 1;
+      const dist = Math.hypot(dx, dy) || 1;
 
       if (pointer.down) {
         const pullRadius = 320;
@@ -445,6 +549,8 @@ export function stepSwarm(
       p.angle = Math.atan2(p.vy, p.vx) + Math.PI / 2;
     }
   }
+
+  return countChanged;
 }
 
 export function applyBurstOnRelease(
@@ -469,38 +575,49 @@ export function applyBurstOnRelease(
 export function drawSwarmParticles(
   ctx: CanvasRenderingContext2D,
   particles: SwarmParticle[],
-  palette: SwarmPalette
+  palette: SwarmPalette,
+  dpr: number,
+  allowTrails: boolean
 ) {
   for (let i = 0; i < particles.length; i++) {
     const p = particles[i];
     if (p.opacity <= 0.01) continue;
     const color = palette.colors[p.colorIndex];
-    const speed = Math.hypot(p.vx, p.vy);
 
-    if (speed > 95) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(0.45, p.opacity * 0.55);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.25;
-      ctx.beginPath();
-      ctx.moveTo(p.prevX - p.vx * 0.025, p.prevY - p.vy * 0.025);
-      ctx.lineTo(p.x, p.y);
-      ctx.stroke();
-      ctx.restore();
+    // Short, subtle trails ONLY in ambient phase (never during intro)
+    if (allowTrails) {
+      const dx = p.x - p.prevX;
+      const dy = p.y - p.prevY;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 1.8 && dist < 40) {
+        const trailLen = Math.min(12, dist * 3.5);
+        const ux = dx / dist;
+        const uy = dy / dist;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.globalAlpha = Math.min(0.24, p.opacity * 0.3);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.moveTo(p.x - ux * trailLen, p.y - uy * trailLen);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      }
     }
 
-    ctx.save();
-    ctx.globalAlpha = p.opacity;
-    ctx.translate(p.x, p.y);
+    const s = p.size;
+    ctx.setTransform(dpr, 0, 0, dpr, p.x * dpr, p.y * dpr);
     ctx.rotate(p.angle);
-    ctx.beginPath();
-    ctx.moveTo(0, -p.size);
-    ctx.lineTo(p.size * 0.72, p.size * 0.85);
-    ctx.lineTo(0, p.size * 0.42);
-    ctx.lineTo(-p.size * 0.72, p.size * 0.85);
-    ctx.closePath();
+    ctx.globalAlpha = p.opacity;
     ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s);
+    ctx.lineTo(s * 0.72, s * 0.85);
+    ctx.lineTo(0, s * 0.42);
+    ctx.lineTo(-s * 0.72, s * 0.85);
+    ctx.closePath();
     ctx.fill();
-    ctx.restore();
   }
+
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.globalAlpha = 1;
 }
