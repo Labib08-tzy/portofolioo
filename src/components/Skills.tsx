@@ -449,7 +449,7 @@ export function Skills() {
       <div
         ref={stageRef}
         aria-hidden="true"
-        className="skills-stage-mask relative z-10 h-[420px] w-full overflow-hidden md:h-[520px]"
+        className="skills-stage-mask relative z-10 h-[clamp(290px,52vw,520px)] w-full overflow-hidden"
       >
         {/* Top & bottom soft edge gradients */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-14 bg-gradient-to-b from-ink to-transparent" />
@@ -490,14 +490,14 @@ export function Skills() {
               style={style}
               className="skill-circle-trigger pointer-events-auto absolute top-0 left-0 will-change-transform"
             >
-              <div className="flex flex-col items-center gap-2 text-center">
-                <div className="skill-circle flex h-14 w-14 items-center justify-center rounded-full bg-ink/85 backdrop-blur-xs md:h-[72px] md:w-[72px]">
+              <div className="flex flex-col items-center gap-1.5 text-center">
+                <div className="skill-circle flex h-[clamp(42px,8vw,72px)] w-[clamp(42px,8vw,72px)] items-center justify-center rounded-full bg-ink/85 backdrop-blur-xs">
                   {icon ? (
                     <svg
                       viewBox="0 0 24 24"
                       aria-hidden="true"
                       style={{ color: brandColor }}
-                      className="h-6 w-6 fill-current md:h-8 md:w-8"
+                      className="h-[clamp(18px,3.4vw,32px)] w-[clamp(18px,3.4vw,32px)] fill-current"
                     >
                       <path d={icon.path} />
                     </svg>
@@ -505,13 +505,13 @@ export function Skills() {
                     <span
                       aria-hidden="true"
                       style={{ color: brandColor }}
-                      className="font-mono text-xs font-bold md:text-sm"
+                      className="font-mono text-[clamp(10px,1.8vw,14px)] font-bold"
                     >
                       {getInitials(node.tech)}
                     </span>
                   )}
                 </div>
-                <span className="skill-label whitespace-nowrap font-mono text-[11px] text-sage transition-colors duration-200">
+                <span className="skill-label whitespace-nowrap font-mono text-[clamp(9px,1.6vw,11px)] text-sage transition-colors duration-200">
                   {node.tech}
                 </span>
               </div>

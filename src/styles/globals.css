@@ -7,6 +7,9 @@
 @import "@fontsource/jetbrains-mono/latin-400.css";
 @import "@fontsource/jetbrains-mono/latin-500.css";
 @import "@fontsource/jetbrains-mono/latin-700.css";
+@import "@fontsource/montserrat/latin-500.css";
+@import "@fontsource/montserrat/latin-600.css";
+@import "@fontsource/montserrat/latin-700.css";
 @import "./tokens.css";
 
 @layer base {
@@ -15,6 +18,13 @@
     color: var(--c-sand);
     font-family: var(--font-sans);
     color-scheme: dark;
+    scroll-padding-top: 4.5rem;
+  }
+
+  @media (min-width: 768px) {
+    html {
+      scroll-padding-top: 5rem;
+    }
   }
 
   body {
@@ -59,13 +69,13 @@
 .brutal-card {
   background-color: var(--c-forest-900);
   border: 1px solid var(--c-forest-600);
-  box-shadow: var(--shadow-brutal);
+  box-shadow: clamp(2px, 0.7vw, 4px) clamp(2px, 0.7vw, 4px) 0 0 var(--c-forest-600);
 }
 
 .brutal-card-lg {
   background-color: var(--c-forest-900);
   border: 1px solid var(--c-forest-600);
-  box-shadow: var(--shadow-brutal-lg);
+  box-shadow: clamp(4px, 1.2vw, 8px) clamp(4px, 1.2vw, 8px) 0 0 var(--c-forest-600);
 }
 
 .bg-grid-pattern {

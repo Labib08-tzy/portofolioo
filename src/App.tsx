@@ -1,5 +1,6 @@
 import { Suspense, lazy } from "react";
 import { motion } from "framer-motion";
+import { CinematicSection } from "./components/CinematicSection";
 import { Hero } from "./components/Hero";
 import { Nav } from "./components/Nav";
 import { Preloader } from "./components/Preloader";
@@ -16,9 +17,9 @@ const About = lazy(() =>
 const Skills = lazy(() =>
   import("./components/Skills").then((m) => ({ default: m.Skills }))
 );
-const FolderShowcase = lazy(() =>
-  import("./components/FolderShowcase").then((m) => ({
-    default: m.FolderShowcase,
+const PortfolioSection = lazy(() =>
+  import("./components/portfolio/PortfolioSection").then((m) => ({
+    default: m.PortfolioSection,
   }))
 );
 const Experience = lazy(() =>
@@ -68,7 +69,9 @@ export function App() {
           </motion.div>
 
           <main id="main-content" tabIndex={-1}>
-            <Hero />
+            <CinematicSection mode="exit-only">
+              <Hero />
+            </CinematicSection>
             <Suspense fallback={null}>
               <EyeScan
                 frames={frames}
@@ -76,11 +79,36 @@ export function App() {
                 bgProgress={bgProgress}
                 onFrameFocus={setPriorityFrame}
               />
-              <About />
-              <Skills />
-              <FolderShowcase />
-              <Experience />
-              <Contact />
+              <CinematicSection
+                mode="flow"
+                bgColors={["#0b0f0d", "#0e1511", "#0b0f0d"]}
+              >
+                <About />
+              </CinematicSection>
+              <CinematicSection
+                mode="pinned"
+                bgColors={["#0b0f0d", "#0d1410", "#0b0f0d"]}
+              >
+                <Skills />
+              </CinematicSection>
+              <CinematicSection
+                mode="flow"
+                bgColors={["#0b0f0d", "#101712", "#0b0f0d"]}
+              >
+                <PortfolioSection />
+              </CinematicSection>
+              <CinematicSection
+                mode="flow"
+                bgColors={["#0b0f0d", "#0e1410", "#0b0f0d"]}
+              >
+                <Experience />
+              </CinematicSection>
+              <CinematicSection
+                mode="flow"
+                bgColors={["#0b0f0d", "#0d1310", "#0b0f0d"]}
+              >
+                <Contact />
+              </CinematicSection>
             </Suspense>
           </main>
         </>

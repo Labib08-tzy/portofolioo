@@ -127,28 +127,28 @@ export function Hero() {
       <Crosshair className="right-4 bottom-4 hidden sm:block sm:right-6" />
 
       {/* Foreground Content */}
-      <div className="pointer-events-none relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-between px-4 pt-24 pb-8 sm:px-6 lg:px-8">
+      <div className="pointer-events-none relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col justify-between px-[clamp(14px,3.2vw,32px)] pt-[clamp(76px,12vw,96px)] pb-[clamp(16px,3vw,32px)]">
         {/* Top HUD strip */}
         <motion.div
           initial={reducedMotion ? false : { opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: reducedMotion ? 0 : 0.45 }}
-          className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs uppercase tracking-[0.18em] text-sage"
+          className="flex flex-wrap items-center justify-between gap-2 font-mono text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.16em] text-sage"
         >
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-forest-600 bg-forest-900/80 px-3 py-1 text-brass">
+          <div className="flex flex-wrap items-center gap-[clamp(6px,1.5vw,12px)]">
+            <span className="rounded-full border border-forest-600 bg-forest-900/80 px-[clamp(8px,1.6vw,12px)] py-1 text-brass">
               01 / 07
             </span>
-            <span ref={countRef} aria-hidden="true" className="hidden sm:inline">
+            <span ref={countRef} aria-hidden="true">
               SWARM: -- UNITS
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span
               ref={clockRef}
               aria-hidden="true"
-              className="rounded-full border border-forest-600 bg-forest-900/80 px-3 py-1 text-sand"
+              className="rounded-full border border-forest-600 bg-forest-900/80 px-[clamp(8px,1.6vw,12px)] py-1 text-sand"
             >
               --:--:-- WIB
             </span>
@@ -156,7 +156,7 @@ export function Hero() {
         </motion.div>
 
         {/* Center Stacked Display Headline + CTAs */}
-        <div className="my-auto flex flex-col justify-center gap-8 py-6">
+        <div className="my-auto flex flex-col justify-center gap-[clamp(16px,3.5vw,32px)] py-[clamp(12px,2.5vw,24px)]">
           <motion.h1
             initial={false}
             animate={{ opacity: isHeadlineVisible ? 1 : 0 }}
@@ -164,7 +164,7 @@ export function Hero() {
               duration: reducedMotion ? 0 : 0.6,
               ease: [0.22, 1, 0.36, 1],
             }}
-            className="font-display text-[clamp(2.65rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.94] tracking-tighter"
+            className="font-display text-[clamp(2.25rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.94] tracking-tighter"
           >
             <span
               ref={line0Ref}
@@ -250,12 +250,12 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Endless Stack Marquee (desktop/tablet; reduced on mobile) */}
+          {/* Endless Stack Marquee (proportionally scaled across all viewports) */}
           <div
             aria-label="Teknologi utama"
-            className="pointer-events-auto hidden overflow-hidden border-y border-forest-600/80 bg-forest-900/75 py-2.5 backdrop-blur-sm sm:block"
+            className="pointer-events-auto overflow-hidden border-y border-forest-600/80 bg-forest-900/75 py-[clamp(6px,1.2vw,10px)] backdrop-blur-sm"
           >
-            <div className="animate-marquee flex w-max items-center gap-6 whitespace-nowrap font-mono text-xs uppercase tracking-[0.2em] text-sand">
+            <div className="animate-marquee flex w-max items-center gap-[clamp(14px,2.5vw,24px)] whitespace-nowrap font-mono text-[clamp(10px,1.8vw,12px)] uppercase tracking-[0.18em] text-sand">
               {[...HERO_MARQUEE_STACK, ...HERO_MARQUEE_STACK].map((item, idx) => (
                 <span
                   key={`${item}-${idx}`}

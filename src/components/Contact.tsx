@@ -31,9 +31,9 @@ export function Contact() {
     <>
       <section
         id="contact"
-        className="border-b border-forest-600 bg-ink py-20 sm:py-28"
+        className="border-b border-forest-600 bg-ink py-[clamp(48px,7vw,112px)]"
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-[clamp(14px,3.2vw,32px)]">
           <SectionHeading
             index="06"
             eyebrow="Kontak"
@@ -41,20 +41,22 @@ export function Contact() {
             subtitle="Terbuka untuk diskusi magang, kerja sama project web, atau peluang belajar."
           />
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-3 gap-[clamp(8px,2vw,24px)]">
             {channels.map((ch) => (
               <div
                 key={ch.label}
-                className="brutal-card flex flex-col justify-between p-6"
+                className="brutal-card flex min-w-0 flex-col justify-between p-[clamp(10px,2.2vw,24px)]"
               >
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-brass">
+                  <p className="font-ui text-[clamp(10px,1.6vw,12px)] font-semibold uppercase tracking-[0.07em] text-brass">
                     {ch.label}
                   </p>
-                  <p className="mt-3 break-all text-sm text-sand">{ch.value}</p>
+                  <p className="mt-2 break-all text-[clamp(11px,1.8vw,14px)] text-sand">
+                    {ch.value}
+                  </p>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-[clamp(12px,2.5vw,24px)]">
                   {ch.href ? (
                     <PillButton
                       href={ch.href}
@@ -62,11 +64,12 @@ export function Contact() {
                       rel={ch.label === "Email" ? undefined : "noreferrer"}
                       variant="primary"
                       size="sm"
+                      className="!min-h-[38px] !px-[clamp(8px,1.8vw,16px)] !text-[clamp(10px,1.6vw,12px)] sm:!min-h-[44px]"
                     >
                       Buka {ch.label}
                     </PillButton>
                   ) : (
-                    <span className="inline-flex rounded-full border border-forest-600 bg-ink px-3 py-1 font-mono text-xs text-sage">
+                    <span className="inline-flex rounded-full border border-forest-600 bg-ink px-[clamp(6px,1.4vw,12px)] py-1 font-ui text-[clamp(9px,1.5vw,12px)] font-medium text-sage">
                       Belum diisi (TODO)
                     </span>
                   )}
@@ -75,7 +78,7 @@ export function Contact() {
             ))}
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border border-forest-600 bg-forest-900 p-6">
+          <div className="mt-[clamp(20px,3.5vw,40px)] flex flex-wrap items-center justify-between gap-4 border border-forest-600 bg-forest-900 p-[clamp(14px,2.5vw,24px)]">
             <div>
               <p className="font-display text-lg font-bold text-sand">
                 Butuh ringkasan dalam format PDF?

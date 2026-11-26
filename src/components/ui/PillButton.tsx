@@ -28,7 +28,7 @@ export function PillButton({
   ariaLabel,
 }: PillButtonProps) {
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-full font-mono font-medium tracking-tight transition-transform duration-150 active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-brass focus-visible:outline-offset-3";
+    "inline-flex items-center justify-center gap-2 rounded-full font-ui font-semibold tracking-[0.02em] transition-transform duration-150 active:translate-y-0.5 focus-visible:outline-2 focus-visible:outline-brass focus-visible:outline-offset-3";
 
   const sizeClasses =
     size === "sm" ? "px-4 py-1.5 text-xs" : "px-6 py-3 text-sm";
