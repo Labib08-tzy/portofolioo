@@ -230,6 +230,35 @@
   animation-play-state: paused;
 }
 
+.skill-circle {
+  border: 1px solid color-mix(in srgb, var(--brand-color) 40%, transparent);
+  transition:
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.skill-circle-trigger:hover .skill-circle,
+.skill-circle-trigger:focus-visible .skill-circle {
+  transform: translateY(-4px);
+  border-color: var(--brand-color);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--brand-color) 35%, transparent);
+}
+
+.skill-circle-trigger:hover .skill-circle-icon,
+.skill-circle-trigger:focus-visible .skill-circle-icon {
+  transform: scale(1.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skill-circle-trigger:hover .skill-circle,
+  .skill-circle-trigger:focus-visible .skill-circle,
+  .skill-circle-trigger:hover .skill-circle-icon,
+  .skill-circle-trigger:focus-visible .skill-circle-icon {
+    transform: none !important;
+  }
+}
+
 .hero-float-a {
   animation: hero-float-a 5.6s ease-in-out infinite;
   will-change: transform;
