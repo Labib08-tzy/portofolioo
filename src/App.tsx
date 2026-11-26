@@ -88,6 +88,7 @@ export function App() {
               <CinematicSection
                 mode="pinned"
                 bgColors={["#0b0f0d", "#0d1410", "#0b0f0d"]}
+                runway="clamp(100svh, 110svh, 125svh)"
               >
                 <Skills />
               </CinematicSection>

@@ -406,7 +406,7 @@ export function Skills() {
     <section
       ref={sectionRef}
       id="skills"
-      className="relative scroll-mt-20 overflow-hidden border-b border-forest-600 bg-ink bg-grid-pattern pt-20 pb-10 sm:pt-28 sm:pb-14"
+      className="relative scroll-mt-20 overflow-hidden border-b border-forest-600 bg-ink bg-grid-pattern pt-[clamp(48px,6vw,112px)] pb-[clamp(24px,4vw,56px)]"
     >
       {/* Subtle ambient glows */}
       <div

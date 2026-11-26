@@ -16,6 +16,8 @@ interface CinematicSectionProps {
   mode?: TransitionMode;
   /** Subtle background color interpolation stops within the site's dark forest/ink palette. */
   bgColors?: [string, string, string];
+  /** Override the minimum height of pinned scroll runway (default "135svh"). */
+  runway?: string;
   className?: string;
 }
 
@@ -25,6 +27,7 @@ export function CinematicSection({
   children,
   mode = "flow",
   bgColors = DEFAULT_BG,
+  runway,
   className = "",
 }: CinematicSectionProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -133,8 +136,8 @@ export function CinematicSection({
     return (
       <motion.div
         ref={containerRef}
-        className={`relative min-h-[135svh] overflow-x-clip ${className}`}
-        style={{ backgroundColor: bgColor }}
+        className={`relative overflow-x-clip ${className}`}
+        style={{ minHeight: runway ?? (isMobile ? "115svh" : "135svh"), backgroundColor: bgColor }}
       >
         <div className="sticky top-0 flex min-h-[100svh] items-center">
           <motion.div

@@ -307,7 +307,138 @@
   .animate-marquee,
   .hero-float-a,
   .hero-float-b,
-  .hero-parallax-x {
+  .hero-parallax-x,
+  .hero-dot-pulse,
+  .hero-gradient-sweep {
+    animation: none !important;
+  }
+}
+
+/* Hero gradient sweep on FULL-STACK outline text */
+@keyframes gradient-sweep {
+  0% {
+    background-position: -200% center;
+  }
+  30%, 100% {
+    background-position: 200% center;
+  }
+}
+
+.hero-gradient-sweep {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--c-brass) 45%,
+    var(--c-sand) 50%,
+    var(--c-brass) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: gradient-sweep 5.5s ease-in-out infinite;
+}
+
+/* Dot pulse on the period in DEVELOPER. */
+@keyframes dot-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.6;
+  }
+}
+
+.hero-dot-pulse {
+  animation: dot-pulse 2.4s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Background: Spotlight grid, Glow blobs, Grain                      */
+/* ------------------------------------------------------------------ */
+
+/* Spotlight: radial brightening of grid around cursor */
+.bg-spotlight {
+  --mx: 50%;
+  --my: 50%;
+  background: radial-gradient(
+    circle 280px at var(--mx) var(--my),
+    color-mix(in srgb, var(--c-forest-600) 30%, transparent) 0%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  mix-blend-mode: screen;
+}
+
+/* Floating glow blobs */
+.glow-blob {
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.12;
+  will-change: transform;
+}
+
+.glow-blob-emerald-1 {
+  width: clamp(300px, 40vw, 600px);
+  height: clamp(300px, 40vw, 600px);
+  top: 10%;
+  right: -5%;
+  background: var(--c-glow-emerald);
+  animation: float-blob-1 42s ease-in-out infinite;
+}
+
+.glow-blob-brass-1 {
+  width: clamp(250px, 35vw, 500px);
+  height: clamp(250px, 35vw, 500px);
+  bottom: 5%;
+  left: -8%;
+  background: var(--c-brass);
+  animation: float-blob-2 55s ease-in-out infinite;
+  opacity: 0.09;
+}
+
+.glow-blob-emerald-2 {
+  width: clamp(200px, 30vw, 450px);
+  height: clamp(200px, 30vw, 450px);
+  top: 50%;
+  left: 30%;
+  background: var(--c-glow-emerald);
+  animation: float-blob-3 38s ease-in-out infinite;
+  opacity: 0.07;
+}
+
+@keyframes float-blob-1 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(40px, -30px, 0) scale(1.08); }
+  66% { transform: translate3d(-25px, 20px, 0) scale(0.95); }
+}
+
+@keyframes float-blob-2 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  40% { transform: translate3d(-35px, 25px, 0) scale(1.05); }
+  70% { transform: translate3d(30px, -15px, 0) scale(0.92); }
+}
+
+@keyframes float-blob-3 {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(20px, 35px, 0) scale(1.1); }
+  75% { transform: translate3d(-30px, -20px, 0) scale(0.9); }
+}
+
+/* Noise/grain overlay using SVG filter */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  opacity: 0.035;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-blob,
+  .hero-dot-pulse {
     animation: none !important;
   }
 }

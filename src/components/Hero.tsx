@@ -7,10 +7,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import type { IntroPhase } from "../canvas/SwarmCanvas";
 import { PillButton } from "./ui/PillButton";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
 const SwarmCanvas = lazy(() =>
   import("../canvas/SwarmCanvas").then((m) => ({ default: m.SwarmCanvas }))
@@ -27,6 +28,223 @@ const HERO_MARQUEE_STACK = [
   "GSAP",
   "Framer Motion",
 ];
+
+/* ------------------------------------------------------------------ */
+/*  Animated Headline                                                  */
+/* ------------------------------------------------------------------ */
+
+interface HeadlineLineConfig {
+  text: string;
+  variant: "fill" | "outline" | "fill-dot";
+}
+
+const HEADLINE_LINES: HeadlineLineConfig[] = [
+  { text: "CREATIVE", variant: "fill" },
+  { text: "FULL-STACK", variant: "outline" },
+  { text: "DEVELOPER.", variant: "fill-dot" },
+];
+
+/** Split text into individual letter spans for pointer‑reactive effect. */
+function LetterSpans({
+  text,
+  variant,
+  containerRef,
+}: {
+  text: string;
+  variant: HeadlineLineConfig["variant"];
+  containerRef: React.RefObject<HTMLElement | null>;
+}) {
+  const spanRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const rafId = useRef(0);
+  const isTouch = useMediaQuery("(hover: none)");
+
+  useEffect(() => {
+    if (isTouch) return;
+    const container = containerRef.current;
+    if (!container) return;
+
+    let mx = -9999;
+    let my = -9999;
+
+    const onMove = (e: PointerEvent) => {
+      const rect = container.getBoundingClientRect();
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
+    };
+
+    const onLeave = () => {
+      mx = -9999;
+      my = -9999;
+    };
+
+    const tick = () => {
+      const spans = spanRefs.current;
+      for (let i = 0; i < spans.length; i++) {
+        const el = spans[i];
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2 - (containerRef.current?.getBoundingClientRect().left ?? 0);
+        const cy = rect.top + rect.height / 2 - (containerRef.current?.getBoundingClientRect().top ?? 0);
+        const dist = Math.hypot(mx - cx, my - cy);
+        const radius = 90;
+        if (dist < radius) {
+          const strength = 1 - dist / radius;
+          const lift = -strength * 8;
+          el.style.transform = `translateY(${lift}px)`;
+          if (variant === "outline") {
+            el.style.webkitTextStroke = "0px";
+            el.style.color = "var(--c-sand)";
+          }
+        } else {
+          el.style.transform = "";
+          if (variant === "outline") {
+            el.style.webkitTextStroke = "";
+            el.style.color = "";
+          }
+        }
+      }
+      rafId.current = requestAnimationFrame(tick);
+    };
+
+    container.addEventListener("pointermove", onMove, { passive: true });
+    container.addEventListener("pointerleave", onLeave);
+    rafId.current = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId.current);
+      container.removeEventListener("pointermove", onMove);
+      container.removeEventListener("pointerleave", onLeave);
+    };
+  }, [isTouch, variant, containerRef]);
+
+  const letters = text.split("");
+  const hasDot = variant === "fill-dot";
+  const mainText = hasDot ? letters.slice(0, -1) : letters;
+  const dot = hasDot ? letters[letters.length - 1] : null;
+
+  return (
+    <>
+      {mainText.map((ch, i) => (
+        <span
+          key={i}
+          ref={(el) => { spanRefs.current[i] = el; }}
+          className={`inline-block transition-[color,-webkit-text-stroke] duration-150 ${
+            variant === "outline" ? "text-outline-sand" : "text-sand"
+          }`}
+          style={{ willChange: "transform" }}
+        >
+          {ch === " " ? "\u00A0" : ch}
+        </span>
+      ))}
+      {dot && (
+        <span
+          ref={(el) => { spanRefs.current[mainText.length] = el; }}
+          className="inline-block text-brass hero-dot-pulse"
+          style={{ willChange: "transform" }}
+        >
+          {dot}
+        </span>
+      )}
+    </>
+  );
+}
+
+function AnimatedHeadline({
+  isVisible,
+  reducedMotion,
+  lineRefs,
+}: {
+  isVisible: boolean;
+  reducedMotion: boolean;
+  lineRefs: React.RefObject<HTMLSpanElement | null>[];
+}) {
+  const h1Ref = useRef<HTMLHeadingElement | null>(null);
+  const sectionRef = useRef<HTMLElement | null>(null);
+
+  // Find the hero section for scroll-based parallax
+  useEffect(() => {
+    sectionRef.current = document.getElementById("home");
+  }, []);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start start", "end start"],
+  });
+
+  const y0 = useTransform(scrollYProgress, [0, 1], [0, -30]);
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, -55]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, -80]);
+  const yValues = [y0, y1, y2];
+
+  const maskRevealVariants = {
+    hidden: { y: "110%" },
+    visible: (i: number) => ({
+      y: "0%",
+      transition: {
+        duration: 0.7,
+        delay: i * 0.12,
+        ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
+      },
+    }),
+  };
+
+  if (reducedMotion) {
+    return (
+      <h1
+        ref={h1Ref}
+        aria-label="Creative Full-Stack Developer"
+        className="font-display text-[clamp(2.25rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.94] tracking-tighter"
+        style={{ opacity: isVisible ? 1 : 0 }}
+      >
+        <span ref={lineRefs[0]} className="pointer-events-auto block w-fit text-sand">CREATIVE</span>
+        <span ref={lineRefs[1]} className="pointer-events-auto block w-fit text-outline-sand">FULL-STACK</span>
+        <span ref={lineRefs[2]} className="pointer-events-auto block w-fit text-sand">
+          DEVELOPER<span className="text-brass">.</span>
+        </span>
+      </h1>
+    );
+  }
+
+  return (
+    <motion.h1
+      ref={h1Ref}
+      aria-label="Creative Full-Stack Developer"
+      initial={false}
+      animate={{ opacity: isVisible ? 1 : 0 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="font-display text-[clamp(2.25rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.94] tracking-tighter"
+    >
+      {HEADLINE_LINES.map((line, i) => (
+        <motion.span
+          key={line.text}
+          ref={lineRefs[i]}
+          className={`pointer-events-auto block w-fit ${
+            line.variant === "outline" ? "hero-gradient-sweep" : ""
+          }`}
+          style={{ y: yValues[i] }}
+        >
+          {/* overflow-hidden mask for reveal */}
+          <span className="block overflow-hidden">
+            <motion.span
+              className="block"
+              custom={i}
+              initial="hidden"
+              animate={isVisible ? "visible" : "hidden"}
+              variants={maskRevealVariants}
+            >
+              <LetterSpans
+                text={line.text}
+                variant={line.variant}
+                containerRef={h1Ref}
+              />
+            </motion.span>
+          </span>
+        </motion.span>
+      ))}
+    </motion.h1>
+  );
+}
+
 
 function Crosshair({ className }: { className: string }) {
   return (
@@ -45,6 +263,7 @@ export function Hero() {
   const coordsRef = useRef<HTMLSpanElement | null>(null);
   const clockRef = useRef<HTMLSpanElement | null>(null);
   const countRef = useRef<HTMLSpanElement | null>(null);
+  const spotlightRef = useRef<HTMLDivElement | null>(null);
 
   const line0Ref = useRef<HTMLSpanElement | null>(null);
   const line1Ref = useRef<HTMLSpanElement | null>(null);
@@ -88,6 +307,50 @@ export function Hero() {
     return () => window.clearInterval(timer);
   }, []);
 
+  // Spotlight grid: track pointer and update CSS custom properties
+  useEffect(() => {
+    const el = spotlightRef.current;
+    if (!el) return;
+    const isTouch = window.matchMedia("(hover: none)").matches;
+    if (isTouch) return;
+
+    let rafId = 0;
+    let targetX = -9999;
+    let targetY = -9999;
+
+    const onMove = (e: PointerEvent) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+    };
+
+    const onLeave = () => {
+      targetX = -9999;
+      targetY = -9999;
+    };
+
+    const tick = () => {
+      if (targetX > -1000) {
+        const rect = el.getBoundingClientRect();
+        el.style.setProperty("--mx", `${targetX - rect.left}px`);
+        el.style.setProperty("--my", `${targetY - rect.top}px`);
+        el.style.opacity = "1";
+      } else {
+        el.style.opacity = "0";
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    window.addEventListener("pointerleave", onLeave);
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerleave", onLeave);
+    };
+  }, []);
+
   return (
     <section
       id="home"
@@ -106,7 +369,7 @@ export function Hero() {
         </Suspense>
       </div>
 
-      {/* Ambient glows & subtle noise (hidden on mobile to reduce GPU/fillrate load) */}
+      {/* Ambient glows, floating blobs, spotlight & noise */}
       <div
         aria-hidden="true"
         className="ambient-glow-brass pointer-events-none absolute -bottom-36 -left-36 z-0 hidden h-[520px] w-[520px] rounded-full blur-3xl md:block"
@@ -115,9 +378,29 @@ export function Hero() {
         aria-hidden="true"
         className="ambient-glow-emerald pointer-events-none absolute -top-32 -right-32 z-0 hidden h-[520px] w-[520px] rounded-full blur-3xl md:block"
       />
+      {/* Floating glow blobs (desktop: 3, mobile: 1) */}
       <div
         aria-hidden="true"
-        className="bg-noise-subtle pointer-events-none absolute inset-0 z-0 hidden md:block"
+        className="glow-blob glow-blob-emerald-1 pointer-events-none absolute z-0"
+      />
+      <div
+        aria-hidden="true"
+        className="glow-blob glow-blob-brass-1 pointer-events-none absolute z-0 hidden md:block"
+      />
+      <div
+        aria-hidden="true"
+        className="glow-blob glow-blob-emerald-2 pointer-events-none absolute z-0 hidden md:block"
+      />
+      {/* Spotlight grid overlay (desktop only) */}
+      <div
+        ref={spotlightRef}
+        aria-hidden="true"
+        className="bg-spotlight pointer-events-none absolute inset-0 z-[1] hidden md:block"
+      />
+      {/* Noise grain (always on) */}
+      <div
+        aria-hidden="true"
+        className="bg-grain pointer-events-none absolute inset-0 z-[1]"
       />
 
       {/* Corner registration crosshairs (desktop/tablet) */}
@@ -157,44 +440,11 @@ export function Hero() {
 
         {/* Center Stacked Display Headline + CTAs */}
         <div className="my-auto flex flex-col justify-center gap-[clamp(16px,3.5vw,32px)] py-[clamp(12px,2.5vw,24px)]">
-          <motion.h1
-            initial={false}
-            animate={{ opacity: isHeadlineVisible ? 1 : 0 }}
-            transition={{
-              duration: reducedMotion ? 0 : 0.6,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="font-display text-[clamp(2.25rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.94] tracking-tighter"
-          >
-            <span
-              ref={line0Ref}
-              className="pointer-events-auto block w-fit text-sand"
-            >
-              <span className={reducedMotion ? "block" : "hero-float-a block"}>
-                CREATIVE
-              </span>
-            </span>
-
-            <span
-              ref={line1Ref}
-              className="pointer-events-auto block w-fit text-outline-sand"
-            >
-              <span
-                className={`block ${reducedMotion ? "" : "hero-parallax-x"}`}
-              >
-                FULL-STACK
-              </span>
-            </span>
-
-            <span
-              ref={line2Ref}
-              className="pointer-events-auto block w-fit text-sand"
-            >
-              <span className={reducedMotion ? "block" : "hero-float-b block"}>
-                DEVELOPER<span className="text-brass">.</span>
-              </span>
-            </span>
-          </motion.h1>
+          <AnimatedHeadline
+            isVisible={isHeadlineVisible}
+            reducedMotion={reducedMotion}
+            lineRefs={lineRefs}
+          />
 
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, y: 14 }}
