@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { SwarmCanvas } from "../canvas/SwarmCanvas";
+import { SwarmCanvas, type IntroPhase } from "../canvas/SwarmCanvas";
 import { PillButton } from "./ui/PillButton";
-import { SITE_INFO, profileHud } from "../data/site";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 
 const HERO_MARQUEE_STACK = [
@@ -34,6 +33,18 @@ export function Hero() {
   const coordsRef = useRef<HTMLSpanElement | null>(null);
   const clockRef = useRef<HTMLSpanElement | null>(null);
   const countRef = useRef<HTMLSpanElement | null>(null);
+
+  const line0Ref = useRef<HTMLSpanElement | null>(null);
+  const line1Ref = useRef<HTMLSpanElement | null>(null);
+  const line2Ref = useRef<HTMLSpanElement | null>(null);
+  const lineRefs = useMemo(() => [line0Ref, line1Ref, line2Ref], []);
+
+  const [introPhase, setIntroPhase] = useState<IntroPhase>(
+    reducedMotion ? "ambient" : "gather"
+  );
+
+  const isHeadlineVisible =
+    reducedMotion || introPhase === "melt" || introPhase === "ambient";
 
   const handlePointerReadout = useCallback((x: number, y: number) => {
     if (coordsRef.current) {
@@ -74,6 +85,8 @@ export function Hero() {
       <div className="absolute inset-0 z-0">
         <SwarmCanvas
           reducedMotion={reducedMotion}
+          lineRefs={lineRefs}
+          onIntroPhase={setIntroPhase}
           onPointerReadout={handlePointerReadout}
           onCountChange={handleCountChange}
         />
@@ -128,101 +141,76 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Center Stacked Display Headline + Chips + CTAs */}
-        <div className="my-8 space-y-6">
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-forest-600 bg-forest-900/90 px-3.5 py-1 font-mono text-xs text-sand">
-              <span className="h-2 w-2 rounded-full bg-brass" aria-hidden="true" />
-              {SITE_INFO.school} - RPL
-            </span>
-            <span className="inline-flex items-center rounded-full border border-brass/70 bg-ink/85 px-3.5 py-1 font-mono text-xs text-brass">
-              {profileHud.achievement.replace(" (Tingkat Kabupaten)", "")}
-            </span>
-          </div>
-
-          <h1 className="font-display text-[clamp(2.65rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.92] tracking-tighter">
-            <motion.span
-              initial={reducedMotion ? false : { opacity: 0, y: 34 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: reducedMotion ? 0 : 0.65,
-                delay: 0.08,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              whileHover={reducedMotion ? undefined : { x: 8 }}
-              className="pointer-events-auto block w-fit text-sand transition-opacity duration-200 hover:opacity-90"
+        {/* Center Stacked Display Headline + CTAs */}
+        <div className="my-auto flex flex-col justify-center gap-8 py-6">
+          <motion.h1
+            initial={false}
+            animate={{ opacity: isHeadlineVisible ? 1 : 0 }}
+            transition={{
+              duration: reducedMotion ? 0 : 0.6,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="font-display text-[clamp(2.65rem,8.4vw,7.25rem)] font-bold uppercase leading-[0.94] tracking-tighter"
+          >
+            <span
+              ref={line0Ref}
+              className="pointer-events-auto block w-fit text-sand"
             >
               <span className={reducedMotion ? "block" : "hero-float-a block"}>
                 CREATIVE
               </span>
-            </motion.span>
+            </span>
 
-            <motion.span
-              initial={reducedMotion ? false : { opacity: 0, y: 28 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: reducedMotion ? 0 : 0.7,
-                delay: 0.22,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              whileHover={reducedMotion ? undefined : { x: 10 }}
-              className="pointer-events-auto block w-fit"
+            <span
+              ref={line1Ref}
+              className="pointer-events-auto block w-fit text-outline-sand"
             >
               <span
-                className={`text-outline-sand block ${
-                  reducedMotion ? "" : "hero-parallax-x"
-                }`}
+                className={`block ${reducedMotion ? "" : "hero-parallax-x"}`}
               >
                 FULL-STACK
               </span>
-            </motion.span>
-
-            <span className="block overflow-hidden">
-              <motion.span
-                initial={
-                  reducedMotion ? false : { opacity: 0, y: "100%", scale: 0.94 }
-                }
-                animate={{ opacity: 1, y: "0%", scale: 1 }}
-                transition={{
-                  duration: reducedMotion ? 0 : 0.75,
-                  delay: 0.36,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                whileHover={reducedMotion ? undefined : { x: 8 }}
-                className="pointer-events-auto block w-fit origin-left text-sand transition-opacity duration-200 hover:opacity-90"
-              >
-                <span className={reducedMotion ? "block" : "hero-float-b block"}>
-                  DEVELOPER<span className="text-brass">.</span>
-                </span>
-              </motion.span>
             </span>
-          </h1>
+
+            <span
+              ref={line2Ref}
+              className="pointer-events-auto block w-fit text-sand"
+            >
+              <span className={reducedMotion ? "block" : "hero-float-b block"}>
+                DEVELOPER<span className="text-brass">.</span>
+              </span>
+            </span>
+          </motion.h1>
 
           <motion.div
             initial={reducedMotion ? false : { opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.5, delay: 0.25 }}
-            className="grid gap-6 pt-2 md:grid-cols-12 md:items-end"
+            animate={
+              isHeadlineVisible
+                ? { opacity: 1, y: 0 }
+                : { opacity: 0, y: 14 }
+            }
+            transition={{
+              duration: reducedMotion ? 0 : 0.5,
+              delay: isHeadlineVisible && !reducedMotion ? 0.15 : 0,
+            }}
+            className="pointer-events-auto flex flex-wrap items-center gap-3"
           >
-            <div className="md:col-span-7">
-              <p className="max-w-xl bg-ink/55 px-1 text-base text-sand/90 backdrop-blur-[2px] sm:text-lg">
-                {SITE_INFO.positioning}
-              </p>
-            </div>
-
-            <div className="pointer-events-auto flex flex-wrap items-center gap-3 md:col-span-5 md:justify-end">
-              <PillButton href="#projects" variant="primary">
-                Lihat Project
-              </PillButton>
-              <PillButton href="#contact" variant="outline">
-                Hubungi Saya
-              </PillButton>
-            </div>
+            <PillButton href="#projects" variant="primary">
+              Lihat Project
+            </PillButton>
+            <PillButton href="#contact" variant="outline">
+              Hubungi Saya
+            </PillButton>
           </motion.div>
         </div>
 
         {/* Bottom HUD + Marquee */}
-        <div className="space-y-4">
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0 }}
+          animate={{ opacity: isHeadlineVisible ? 1 : 0.45 }}
+          transition={{ duration: reducedMotion ? 0 : 0.45 }}
+          className="space-y-4"
+        >
           <div className="flex items-end justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-sage">
             <span ref={coordsRef} aria-hidden="true">
               X:0000 // Y:0000
@@ -255,14 +243,20 @@ export function Hero() {
           >
             <div className="animate-marquee flex w-max items-center gap-6 whitespace-nowrap font-mono text-xs uppercase tracking-[0.2em] text-sand">
               {[...HERO_MARQUEE_STACK, ...HERO_MARQUEE_STACK].map((item, idx) => (
-                <span key={`${item}-${idx}`} className="inline-flex items-center gap-6">
+                <span
+                  key={`${item}-${idx}`}
+                  className="inline-flex items-center gap-6"
+                >
                   <span>{item}</span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-brass" aria-hidden="true" />
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-brass"
+                    aria-hidden="true"
+                  />
                 </span>
               ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

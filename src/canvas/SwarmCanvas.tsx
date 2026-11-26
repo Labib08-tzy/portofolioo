@@ -1,31 +1,46 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import {
   applyBurstOnRelease,
-  createSwarmParticles,
+  createAmbientParticles,
+  createIntroParticles,
   drawSwarmParticles,
+  getIntroTargetCountForWidth,
   getParticleCountForWidth,
   readSwarmPalette,
+  sampleHeadlineTargets,
+  stepIntroGatherHold,
   stepSwarm,
+  type HeadlineLineSpec,
   type PointerState,
   type SwarmParticle,
 } from "./swarmEngine";
 
+export type IntroPhase = "gather" | "hold" | "melt" | "ambient";
+
 interface SwarmCanvasProps {
   reducedMotion: boolean;
+  lineRefs: Array<RefObject<HTMLSpanElement | null>>;
+  onIntroPhase?: (phase: IntroPhase) => void;
   onPointerReadout?: (x: number, y: number) => void;
   onCountChange?: (count: number) => void;
 }
 
+const SESSION_INTRO_KEY = "labib_hero_intro_done";
+
 export function SwarmCanvas({
   reducedMotion,
+  lineRefs,
+  onIntroPhase,
   onPointerReadout,
   onCountChange,
 }: SwarmCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pointerReadoutRef = useRef(onPointerReadout);
   const countChangeRef = useRef(onCountChange);
+  const phaseCbRef = useRef(onIntroPhase);
   pointerReadoutRef.current = onPointerReadout;
   countChangeRef.current = onCountChange;
+  phaseCbRef.current = onIntroPhase;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,10 +55,23 @@ export function SwarmCanvas({
     let dpr = 1;
     let particles: SwarmParticle[] = [];
     let rafId = 0;
+    let cancelled = false;
     let lastTime = performance.now();
     let resizeTimer: number | undefined;
     let isVisible = true;
     let isTabVisible = !document.hidden;
+
+    const isRepeatSession =
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem(SESSION_INTRO_KEY) === "1";
+
+    const gatherDuration = isRepeatSession ? 700 : 2400;
+    const holdDuration = isRepeatSession ? 250 : 800;
+
+    let phase: IntroPhase = reducedMotion ? "ambient" : "gather";
+    let introStart = performance.now();
+    let frameCount = 0;
+    let dtSum = 0;
 
     const pointer: PointerState = {
       x: -9999,
@@ -52,7 +80,37 @@ export function SwarmCanvas({
       down: false,
     };
 
-    const setup = () => {
+    const measureHeadline = (): HeadlineLineSpec[] => {
+      const canvasRect = canvas.getBoundingClientRect();
+      const specs: HeadlineLineSpec[] = [];
+
+      lineRefs.forEach((ref, idx) => {
+        const el = ref.current;
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        specs.push({
+          text: el.textContent ?? "",
+          outline: idx === 1,
+          left: r.left - canvasRect.left,
+          top: r.top - canvasRect.top,
+          width: r.width,
+          height: r.height,
+          font: `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`,
+          letterSpacing: cs.letterSpacing || "normal",
+        });
+      });
+
+      return specs;
+    };
+
+    const emitPhase = (next: IntroPhase) => {
+      if (phase === next) return;
+      phase = next;
+      phaseCbRef.current?.(next);
+    };
+
+    const setupCanvasSize = () => {
       const rect = canvas.getBoundingClientRect();
       width = Math.max(1, rect.width);
       height = Math.max(1, rect.height);
@@ -61,19 +119,58 @@ export function SwarmCanvas({
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
 
-      const count = getParticleCountForWidth(width);
-      particles = createSwarmParticles(count, width, height);
-      countChangeRef.current?.(count);
+    const initParticles = () => {
+      setupCanvasSize();
+      const normalCount = getParticleCountForWidth(width);
 
       if (reducedMotion) {
+        particles = createAmbientParticles(normalCount, width, height);
+        countChangeRef.current?.(normalCount);
+        emitPhase("ambient");
         ctx.clearRect(0, 0, width, height);
         drawSwarmParticles(ctx, particles, palette);
+        return;
       }
+
+      const specs = measureHeadline();
+      const targetCap = getIntroTargetCountForWidth(width);
+      const targets = sampleHeadlineTargets(specs, width, height, targetCap);
+
+      if (targets.length < 30) {
+        // Fallback: sampling failed, show DOM headline & ambient swarm immediately
+        particles = createAmbientParticles(normalCount, width, height);
+        countChangeRef.current?.(normalCount);
+        emitPhase("ambient");
+        return;
+      }
+
+      particles = createIntroParticles(targets, normalCount, width, height);
+      countChangeRef.current?.(particles.length);
+      introStart = performance.now();
+      phase = "gather";
+      phaseCbRef.current?.("gather");
+    };
+
+    const triggerMelt = () => {
+      emitPhase("melt");
+      try {
+        window.sessionStorage.setItem(SESSION_INTRO_KEY, "1");
+      } catch {
+        // Ignore storage errors
+      }
+      // Scatter particles gently outward as they release from letters
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.vx += (Math.random() - 0.5) * 140;
+        p.vy += (Math.random() - 0.5) * 140;
+      }
+      countChangeRef.current?.(getParticleCountForWidth(width));
     };
 
     const tick = (now: number) => {
-      if (reducedMotion || !isVisible || !isTabVisible) {
+      if (cancelled || reducedMotion || !isVisible || !isTabVisible) {
         rafId = 0;
         return;
       }
@@ -81,7 +178,51 @@ export function SwarmCanvas({
       const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
       lastTime = now;
 
-      stepSwarm(particles, width, height, dt, pointer, grid);
+      // Low-end FPS guard over first 30 frames
+      if (phase === "gather" || phase === "hold") {
+        frameCount++;
+        dtSum += dt;
+        if (frameCount === 30 && dtSum / 30 > 0.045) {
+          triggerMelt();
+        }
+      }
+
+      const elapsed = now - introStart;
+
+      if (phase === "gather" && elapsed >= gatherDuration) {
+        emitPhase("hold");
+      } else if (
+        phase === "hold" &&
+        elapsed >= gatherDuration + holdDuration
+      ) {
+        triggerMelt();
+      } else if (
+        phase === "melt" &&
+        elapsed >= gatherDuration + holdDuration + 650
+      ) {
+        emitPhase("ambient");
+      }
+
+      if (phase === "gather" || phase === "hold") {
+        stepIntroGatherHold(
+          particles,
+          elapsed,
+          dt,
+          pointer,
+          phase === "hold"
+        );
+      } else {
+        stepSwarm(
+          particles,
+          width,
+          height,
+          dt,
+          pointer,
+          grid,
+          phase === "melt"
+        );
+      }
+
       ctx.clearRect(0, 0, width, height);
       drawSwarmParticles(ctx, particles, palette);
 
@@ -116,7 +257,7 @@ export function SwarmCanvas({
     };
 
     const onPointerDown = (e: PointerEvent) => {
-      if (reducedMotion) return;
+      if (reducedMotion || phase === "gather" || phase === "hold") return;
       updatePointerCoords(e.clientX, e.clientY);
       pointer.down = true;
     };
@@ -142,17 +283,22 @@ export function SwarmCanvas({
     const onResize = () => {
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
-        setup();
+        if (phase === "gather" || phase === "hold") {
+          initParticles();
+        } else {
+          setupCanvasSize();
+          if (reducedMotion) {
+            ctx.clearRect(0, 0, width, height);
+            drawSwarmParticles(ctx, particles, palette);
+          }
+        }
       }, 180);
     };
 
     const onVisibilityChange = () => {
       isTabVisible = !document.hidden;
-      if (isTabVisible) {
-        startLoop();
-      } else {
-        stopLoop();
-      }
+      if (isTabVisible) startLoop();
+      else stopLoop();
     };
 
     const observer =
@@ -160,19 +306,34 @@ export function SwarmCanvas({
         ? new IntersectionObserver(
             ([entry]) => {
               isVisible = entry.isIntersecting;
-              if (isVisible) {
-                startLoop();
-              } else {
-                stopLoop();
-              }
+              if (isVisible) startLoop();
+              else stopLoop();
             },
             { threshold: 0.02 }
           )
         : null;
 
-    setup();
-    if (observer) observer.observe(canvas);
-    startLoop();
+    const fontsReady =
+      typeof document !== "undefined" && document.fonts?.ready
+        ? document.fonts.ready
+        : Promise.resolve();
+
+    fontsReady
+      .then(() => {
+        if (cancelled) return;
+        initParticles();
+        if (observer) observer.observe(canvas);
+        startLoop();
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setupCanvasSize();
+        const normalCount = getParticleCountForWidth(width);
+        particles = createAmbientParticles(normalCount, width, height);
+        emitPhase("ambient");
+        if (observer) observer.observe(canvas);
+        startLoop();
+      });
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     window.addEventListener("pointerdown", onPointerDown, { passive: true });
@@ -183,6 +344,7 @@ export function SwarmCanvas({
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
+      cancelled = true;
       stopLoop();
       window.clearTimeout(resizeTimer);
       observer?.disconnect();
@@ -194,7 +356,7 @@ export function SwarmCanvas({
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, lineRefs]);
 
   return (
     <canvas

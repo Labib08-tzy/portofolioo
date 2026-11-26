@@ -91,16 +91,13 @@ Definisikan sebagai CSS variables di `src/styles/tokens.css` dan petakan ke Tail
 
 ### 4.1 Hero: cursor swarm (WAJIB DIPERTAHANKAN)
 
-- Canvas 2D full-bleed (`min-height: 100svh`, termasuk di belakang navbar) berisi pecahan-pecahan kursor panah kecil yang tersebar di seluruh hero dan hidup.
-- **Tanpa pembentukan teks "LABIB"**: partikel bergerak ambient dengan *wander* halus + *boids* ringan (separation, alignment, cohesion lemah) memakai spatial grid agar tidak $O(n^2)$, dan wrap di tepi layar.
-- Interaksi mouse/touch yang jelas:
-  - Hover/gerak pointer: menolak partikel dalam radius ~140px dengan gaya halus.
-  - Tekan dan tahan (`pointerdown`): menarik partikel membentuk pusaran/kerumunan mengikuti pointer.
-  - Lepas (`pointerup`): menyebar kembali dengan ledakan kecil.
-  - Partikel cepat meninggalkan jejak (trail) tipis yang memudar.
-- Warna kursor memakai token palet (`--c-sand`, `--c-brass`, `--c-sage`) dengan opasitas bervariasi untuk kedalaman.
-- Performa: `requestAnimationFrame` dengan delta time, berhenti saat tab tidak aktif atau hero keluar viewport (`IntersectionObserver`), jumlah partikel adaptif (~220 desktop, ~140 tablet, ~80 mobile), `devicePixelRatio` maks 2, resize dengan debounce.
-- Fallback: jika `prefers-reduced-motion: reduce`, tampilkan partikel statis tanpa gerak dan tanpa interaksi.
+- Canvas 2D full-bleed (`min-height: 100svh`, termasuk di belakang navbar) berisi pecahan kursor panah kecil.
+- **Urutan intro (sekali per sesi; kunjungan ulang di sesi yang sama memakai versi singkat):**
+  1. **Berkumpul (~2.4s):** partikel tersebar lalu mengalir melengkung (stagger 0–600ms) membentuk 3 baris headline `CREATIVE` / `FULL-STACK` / `DEVELOPER.` tepat di posisi teks DOM (diukur setelah `document.fonts.ready`). Baris solid disampel isinya (`--c-sand`/`--c-sage`), baris `FULL-STACK` disampel kontur outline-nya saja (`--c-brass`). Target ~900 desktop, ~600 tablet, ~380 mobile.
+  2. **Tahan (~0.8s):** huruf terbaca jelas dengan jitter halus 0.5px.
+  3. **Lebur (~0.6s):** teks `<h1>` DOM muncul *crossfade* tepat di atas partikel, sementara partikel menyebar menjadi swarm ambient dan partikel sementara memudar hingga jumlah normal (~220 desktop, ~140 tablet, ~80 mobile).
+- **Swarm ambient:** *wander* + *boids* ringan memakai spatial grid ($O(n)$), menolak pointer (~140px), pusaran saat tekan-tahan (`pointerdown`), ledakan saat lepas (`pointerup`), dan jejak tipis saat cepat.
+- Performa & fallback: satu loop `requestAnimationFrame`, berhenti saat di luar viewport/tab tidak aktif, `devicePixelRatio` maks 2, deteksi FPS rendah (< ~22 FPS di 30 frame awal langsung lebur). `prefers-reduced-motion`: lewati intro, tampilkan headline DOM & swarm statis.
 
 ### 4.2 Animasi sumber (GIF hasil konversi)
 
@@ -160,8 +157,8 @@ Frame 74–97 **tidak dipakai**. Setelah 100%, sticky dilepas dan halaman lanjut
 Navigasi tetap (`fixed` di atas): Home, About, Skills, Projects, Achievements, Experience, Contact. Tersembunyi (`translateY(-100%)`) saat scroll turun melewati ~80px, muncul kembali saat scroll naik, di paling atas, atau saat fokus keyboard berada di dalam navbar. Menyorot link section yang aktif. Mobile: menu hamburger/overlay. Tombol **Unduh CV** terlihat di nav.
 
 ### 5.1 Hero
-- Full-bleed (`100svh`) di atas canvas swarm boids.
-- Headline display raksasa bertumpuk: `CREATIVE` / `FULL-STACK` / `DEVELOPER` (campuran solid `--c-sand` dan outline), satu kalimat positioning (`TODO`), 2 CTA pill (**Lihat Project** brass, **Hubungi Saya** outline), chip sekolah & LKS, marquee stack nyata, dan elemen HUD sudut (crosshair, koordinat pointer, jam WIB, penghitung partikel, indikator SCROLL, `01 / 07`).
+- Full-bleed (`100svh`) di atas canvas swarm.
+- Headline display raksasa bertumpuk: `CREATIVE` / `FULL-STACK` / `DEVELOPER.` (campuran solid `--c-sand` dan outline, dibentuk terlebih dulu oleh partikel kursor lalu *crossfade* ke teks DOM), 2 CTA pill (**Lihat Project** brass, **Hubungi Saya** outline), marquee stack nyata, dan elemen HUD sudut (crosshair, koordinat pointer, jam WIB, penghitung partikel, indikator SCROLL, `01 / 07`). Tanpa chip sekolah/LKS maupun teks placeholder positioning.
 
 ### 5.1b Eye Scan
 - Section scroll track layar penuh sesuai bagian 4.4: urutan frame 862x756 tanpa bingkai + mask-image + HUD futuristik (frame readout, busur bar data dekoratif, garis scan tunggal, 3 callout skill dengan garis penunjuk, dan kartu HUD identitas).

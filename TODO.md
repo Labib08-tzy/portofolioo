@@ -3,7 +3,7 @@
 Daftar seluruh placeholder `TODO` yang saat ini ada di kode dan perlu diisi dengan data asli oleh Mohammad Labib Nayla Fahmi:
 
 ## 1. Profil & Identitas (`src/data/site.ts` & `index.html`)
-- [ ] **Positioning Hero:** Ganti `SITE_INFO.positioning` dengan satu kalimat positioning yang menjelaskan fokus dan nilai utama.
+- [x] **Positioning Hero:** *(Tidak dipakai — dihapus dari Hero sesuai arahan pemilik; `SITE_INFO.positioning` tetap tersimpan di `src/data/site.ts` namun tidak dirender).*
 - [ ] **Domisili:** Isi `Domisili` pada `SITE_INFO.aboutFacts`.
 - [ ] **Target Audiens:** Pilih dan tulis target utama (`magang/kerja`, `freelance`, atau `kuliah`) pada `SITE_INFO.aboutParagraphs` dan `SITE_INFO.aboutFacts`.
 - [ ] **Bio HUD Eye Scan:** Isi `profileHud.bio` dengan bio singkat.

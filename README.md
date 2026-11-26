@@ -59,7 +59,7 @@ Seluruh konten dibaca dari `src/data/` tanpa hardcode di komponen:
 
 ## Keputusan Desain
 
-- **Swarm Hero (Boids + Spatial Grid):** Partikel kursor tersebar full-bleed dengan gerak *wander* + *boids* ringan menggunakan spatial grid ($O(n)$), menolak pointer saat hover, membentuk pusaran saat ditekan-tahan, menyebar saat dilepas, dan meninggalkan jejak tipis saat cepat.
+- **Swarm Hero (Intro 3-Baris + Boids):** Saat kunjungan pertama di sesi, pecahan kursor mengalir membentuk 3 baris headline (`CREATIVE` / `FULL-STACK` outline / `DEVELOPER.`) di posisi tepat teks DOM, menahan sebentar, lalu melebur (*crossfade* ke `<h1>` DOM) menjadi kawanan *boids* interaktif (*spatial grid* $O(n)$, tolak saat hover, pusaran saat tekan-tahan, ledakan saat lepas). Kunjungan ulang di sesi yang sama memakai intro singkat (`sessionStorage`).
 - **Navbar Hide-on-Scroll:** Navbar `fixed` bersembunyi saat scroll turun melewati 80px, muncul kembali saat scroll naik atau saat fokus keyboard berada di dalamnya, serta menyorot section aktif via `IntersectionObserver`.
 - **Eye Scan Layar Penuh:** Menggunakan frame 862×756 yang dilebur dengan CSS `mask-image` tanpa bingkai kartu, dilengkapi busur bar dekoratif, garis scan tunggal (50–68%), 3 callout skill dengan garis penunjuk SVG (70–90%), dan kartu HUD identitas kaca (80–100%).
 - **Skills Grid Logo (`simple-icons`):** Menampilkan ikon resmi CC0 dari paket `simple-icons` dalam grid ubin brutalist tanpa bar persentase; item berawalan `TODO` di `src/data/skills.ts` disaring dari UI.
