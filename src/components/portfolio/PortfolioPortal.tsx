@@ -179,8 +179,7 @@ function Portal() {
                 {PROJECTS.map((project) => (
                   <ProjectPanel key={project.id} project={project} />
                 ))}
-                <ListPanel
-                  category="certificates"
+                <CertificatesPanel
                   items={CERTIFICATE_ITEMS}
                   panelRef={(el) => {
                     panelRefs.current.certificates = el;
@@ -265,15 +264,14 @@ function ProjectPanel({ project }: { project: Project }) {
     : [];
 
   return (
-    <article className="grid h-[min(76svh,620px)] w-[min(88vw,1040px)] shrink-0 gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-      <div className={`relative hidden flex-col overflow-hidden rounded-3xl lg:flex ${GLASS}`}>
-        <div className="flex items-center gap-1.5 px-5 py-4">
-          <span className="h-2.5 w-2.5 rounded-full bg-ink/25" />
-          <span className="h-2.5 w-2.5 rounded-full bg-ink/25" />
-          <span className="h-2.5 w-2.5 rounded-full bg-ink/25" />
-        </div>
+    <article className="grid h-[min(76svh,620px)] w-[min(88vw,1040px)] shrink-0 gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14 xl:gap-16">
+      <div className="relative hidden min-h-0 items-center justify-center lg:flex lg:pr-2">
         {image ? (
-          <img src={image} alt={`Preview ${project.title}`} className="h-full w-full object-cover" />
+          <img
+            src={image}
+            alt={`Preview ${project.title}`}
+            className="max-h-full max-w-full rounded-2xl object-contain shadow-[0_12px_32px_-12px_rgba(11,15,13,0.35)]"
+          />
         ) : (
           <div className="flex flex-1 items-center justify-center font-display text-[11rem] font-bold leading-none text-ink">
             {project.title.charAt(0)}
@@ -282,6 +280,15 @@ function ProjectPanel({ project }: { project: Project }) {
       </div>
 
       <div className="flex min-h-0 flex-col justify-center gap-3 sm:gap-5">
+        {image ? (
+          <div className="flex h-28 w-full shrink-0 items-center justify-center sm:h-40 lg:hidden">
+            <img
+              src={image}
+              alt={`Preview ${project.title}`}
+              className="max-h-full max-w-full rounded-xl object-contain shadow-[0_8px_24px_-8px_rgba(11,15,13,0.3)]"
+            />
+          </div>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           <Chip>{project.type}</Chip>
           <Chip>{project.status === "done" ? "Selesai" : "Dalam pengembangan"}</Chip>
@@ -291,7 +298,7 @@ function ProjectPanel({ project }: { project: Project }) {
           {project.title}
         </h3>
 
-        <p className={`max-w-xl font-ui text-sm line-clamp-4 sm:line-clamp-none sm:text-base ${description ? "text-ink/90" : "text-ink/40"}`}>
+        <p className={`max-w-xl font-ui text-sm line-clamp-3 sm:line-clamp-none sm:text-base ${description ? "text-ink/90" : "text-ink/40"}`}>
           {description || "Detail project ini segera ditambahkan."}
         </p>
 
@@ -345,6 +352,39 @@ function ProjectPanel({ project }: { project: Project }) {
   );
 }
 
+function CertificatesPanel({
+  items,
+  panelRef,
+}: {
+  items: Achievement[];
+  panelRef: PanelRef;
+}) {
+  const withImages = items.filter((item) => Boolean(item.image));
+  if (withImages.length === 0) return null;
+
+  return (
+    <section
+      ref={panelRef}
+      aria-label="Sertifikat"
+      className="mr-[clamp(48px,8vw,120px)] flex shrink-0 flex-col justify-center gap-5"
+    >
+      <h3 className="font-display text-[clamp(1.75rem,4.6vw,3.5rem)] font-bold leading-[1.02] text-ink">
+        Sertifikat
+      </h3>
+      <div className="flex items-center gap-[clamp(20px,3.5vw,48px)]">
+        {withImages.map((item) => (
+          <img
+            key={item.id}
+            src={item.image}
+            alt={clean(item.title) || "Sertifikat"}
+            className="max-h-[min(48svh,400px)] max-w-[min(78vw,540px)] shrink-0 rounded-2xl object-contain shadow-[0_12px_32px_-12px_rgba(11,15,13,0.35)]"
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function ListPanel({
   category,
   items,
@@ -370,13 +410,22 @@ function ListPanel({
           return (
             <li
               key={item.id}
-              className={`flex items-baseline justify-between gap-4 rounded-2xl px-5 py-4 ${GLASS}`}
+              className={`flex items-center justify-between gap-4 rounded-2xl px-5 py-4 ${GLASS}`}
             >
-              <div>
-                <p className={`font-display text-xl font-bold ${title ? "text-ink" : "text-ink/40"}`}>
-                  {title || "Segera ditambahkan"}
-                </p>
-                {detail ? <p className="mt-1 font-ui text-sm text-ink/75">{detail}</p> : null}
+              <div className="flex min-w-0 items-center gap-4">
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={`Sertifikat ${title || item.id}`}
+                    className="h-14 w-20 shrink-0 rounded-lg border border-white/50 bg-white/40 object-contain p-0.5 sm:h-16 sm:w-24"
+                  />
+                ) : null}
+                <div className="min-w-0">
+                  <p className={`font-display text-xl font-bold ${title ? "text-ink" : "text-ink/40"}`}>
+                    {title || "Segera ditambahkan"}
+                  </p>
+                  {detail ? <p className="mt-1 font-ui text-sm text-ink/75">{detail}</p> : null}
+                </div>
               </div>
               {item.link ? (
                 <a

@@ -5,6 +5,7 @@ export interface Achievement {
   year: string;
   kind: "competition" | "certificate";
   link?: string;
+  image?: string;
 }
 
 export const ACHIEVEMENTS: Achievement[] = [
@@ -21,13 +22,6 @@ export const ACHIEVEMENTS: Achievement[] = [
     issuer: "TODO: Penerbit Sertifikat 1",
     year: "TODO",
     kind: "certificate",
-  },
-  {
-    id: "cert-2",
-    title: "TODO: Nama Sertifikat 2",
-    issuer: "TODO: Penerbit Sertifikat 2",
-    year: "TODO",
-    kind: "certificate",
+    image: "/images/sertifikat1.webp",
   },
 ];
-

@@ -87,24 +87,27 @@ export const SITE_INFO = {
   nickname: "Abi",
   role: "Creative Developer / Full-Stack Developer",
   positioning:
-    "TODO: Tulis satu kalimat positioning yang menjelaskan fokus dan nilai utama.",
+    "Junior Full Stack Developer yang berfokus pada pengembangan aplikasi web dan mobile dengan integrasi AI.",
   school: "SMK Umar Fatah Rembang",
   major: "Rekayasa Perangkat Lunak (RPL)",
   cvUrl: "/cv/cv-labib.pdf",
   aboutPhoto: "/images/about-me.webp",
   aboutHoverPhoto: "/images/about-hover.webp",
-  aboutHoverAlt: "TODO: deskripsi foto",
+  aboutHoverAlt: "Foto bersama pacar",
   aboutParagraphs: [
     "Saya Mohammad Labib Nayla Fahmi (Abi), siswa jurusan Rekayasa Perangkat Lunak (RPL) di SMK Umar Fatah Rembang yang berfokus pada pengembangan web dan aplikasi mobile.",
     "Di RPL saya mempelajari dasar pemrograman, pengembangan antarmuka web modern, pengelolaan basis data, serta pembangunan aplikasi Android untuk kebutuhan nyata.",
-    "TODO: Lengkapi paragraf tentang target yang sedang dicari (magang/kerja, freelance, atau kuliah) dan fokus pengembangan saat ini.",
+    "Saat ini masih bersekolah dan terus mengembangkan skill di bidang pengembangan aplikasi web serta mobile.",
   ],
   aboutFacts: [
     { label: "Nama", value: "Mohammad Labib Nayla Fahmi (Abi)" },
     { label: "Sekolah", value: "SMK Umar Fatah Rembang" },
     { label: "Jurusan", value: "Rekayasa Perangkat Lunak (RPL)" },
-    { label: "Domisili", value: "TODO: Isi domisili" },
-    { label: "Target", value: "TODO: Magang / Kerja / Freelance / Kuliah" },
+    { label: "Domisili", value: "Kabupaten Rembang, Jawa Tengah" },
+    {
+      label: "Target",
+      value: "Menyelesaikan pendidikan dan terus mengembangkan skill",
+    },
   ] satisfies AboutFact[],
 };
 
@@ -115,14 +118,14 @@ export const profileHud: ProfileHud = {
   school: "SMK Umar Fatah Rembang — RPL",
   skills: ["React", "TypeScript", "Tailwind CSS", "Laravel", "Flutter"],
   achievement: "Juara 3 LKS Web Technology (Tingkat Kabupaten)",
-  bio: "TODO: Isi bio singkat untuk panel HUD Eye Scan.",
+  bio: "Siswa aktif siap belajar hal baru",
 };
 
 export const CONTACT_INFO: ContactInfo = {
-  email: "TODO: email@domain.com",
-  github: "TODO: https://github.com/username",
+  email: "mlabibnayla@gmail.com",
+  github: "https://github.com/Labib08-tzy",
   linkedin: "TODO: https://linkedin.com/in/username",
-  instagram: "TODO: https://instagram.com/username",
+  instagram: "https://www.instagram.com/4bbinf._/",
   telegram: "TODO: https://t.me/username",
 };
 

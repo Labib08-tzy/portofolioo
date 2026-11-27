@@ -27,16 +27,17 @@ export const PROJECTS: Project[] = [
     status: "done",
     description:
       "Aplikasi pembukuan UMKM berbasis Android untuk mencatat penghasilan, modal, dan rugi secara terstruktur.",
-    stack: ["Flutter", "Dart", "TODO: Database/State"],
+    stack: ["Flutter", "Dart"],
     featured: true,
     caseStudy: {
       problem:
         "Pelaku UMKM sering mencatat pemasukan, modal, dan kerugian secara manual sehingga sulit memantau kondisi keuangan usaha dengan cepat.",
-      role: "Mobile Developer (TODO: detail peran spesifik bila ada tim).",
+      role: "Mobile Developer",
       solution:
         "Membangun aplikasi Android menggunakan Flutter untuk pencatatan transaksi harian meliputi penghasilan, modal, dan perhitungan rugi.",
       result:
-        "Aplikasi selesai dibangun dan dapat digunakan untuk pencatatan pembukuan dasar UMKM. TODO: Tambahkan metrik/hasil nyata dan screenshot jika tersedia.",
+        "Aplikasi selesai dibangun dan dapat digunakan untuk pencatatan pembukuan dasar UMKM.",
+      images: ["/images/usahaku.webp"],
     },
   },
   {
@@ -44,14 +45,19 @@ export const PROJECTS: Project[] = [
     title: "Google Notes",
     type: "Web",
     status: "done",
-    description: "TODO: Tambahkan deskripsi singkat project Google Notes.",
-    stack: ["TODO: Stack utama"],
+    description:
+      "Aplikasi web pencatat pribadi yang ringkas untuk menulis, mengelompokkan, dan mengelola catatan harian dengan cepat.",
+    stack: ["Web"],
     featured: true,
     caseStudy: {
-      problem: "TODO: Jelaskan masalah yang diselesaikan oleh Google Notes.",
-      role: "TODO: Jelaskan peran Abi dalam project ini.",
-      solution: "TODO: Jelaskan solusi dan fitur utama yang dibangun.",
-      result: "TODO: Jelaskan hasil atau pembelajaran dari project ini.",
+      problem:
+        "Pengguna membutuhkan tempat pencatatan yang cepat, ringan, dan mudah diakses dari browser untuk menyimpan ide maupun daftar tugas.",
+      role: "Web Developer",
+      solution:
+        "Membangun aplikasi catatan berbasis web dengan antarmuka bersih untuk membuat, mengedit, dan menghapus catatan secara praktis.",
+      result:
+        "Menghasilkan aplikasi pencatat yang responsif dan siap dipakai untuk kebutuhan catatan sehari-hari.",
+      images: ["/images/googlenotes.webp"],
     },
   },
   {
@@ -60,17 +66,17 @@ export const PROJECTS: Project[] = [
     type: "Web",
     status: "in-progress",
     description:
-      "TODO: Tambahkan deskripsi tujuan dan fitur utama platform ShowSkill.",
-    stack: ["TODO: Stack yang digunakan"],
-  },
-  {
-    id: "sewa-boardgame",
-    title: "Landing page sewa boardgame",
-    type: "Web",
-    status: "in-progress",
-    description:
-      "Landing page untuk layanan sewa boardgame yang menampilkan katalog permainan dan informasi penyewaan.",
-    stack: ["TODO: Stack yang digunakan"],
+      "Platform web untuk menampilkan keahlian, karya, dan portofolio keterampilan pengguna secara terstruktur.",
+    stack: ["Web"],
+    caseStudy: {
+      problem:
+        "Banyak pelajar dan kreator kesulitan merangkum keahlian serta bukti karyanya dalam satu tampilan yang rapi.",
+      role: "Full-Stack Developer",
+      solution:
+        "Mengembangkan platform web ShowSkill agar pengguna dapat memamerkan profil keahlian dan karya mereka secara terpusat.",
+      result:
+        "Platform sedang dalam tahap pengembangan dengan fokus pada tampilan profil keahlian yang jelas.",
+      images: ["/images/showskill.webp"],
+    },
   },
 ];
-

@@ -44,13 +44,15 @@ function ProjectThumbnail({ project }: { project: Project }) {
 
   if (imageSrc) {
     return (
-      <img
-        src={imageSrc}
-        alt={`Preview ${project.title}`}
-        loading="lazy"
-        decoding="async"
-        className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
-      />
+      <div className="flex h-full w-full items-center justify-center bg-ink/90 p-2">
+        <img
+          src={imageSrc}
+          alt={`Preview ${project.title}`}
+          loading="lazy"
+          decoding="async"
+          className="max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+        />
+      </div>
     );
   }
 
@@ -180,21 +182,35 @@ function CertificateCard({
       className="brutal-card group flex flex-col overflow-hidden transition-colors duration-200 hover:border-brass"
     >
       {/* Certificate Preview Frame */}
-      <div className="relative aspect-video w-full overflow-hidden border-b border-forest-600 bg-gradient-to-br from-forest-900 via-ink to-ink p-[clamp(10px,2vw,20px)]">
-        <div className="flex h-full w-full flex-col justify-between border border-dashed border-forest-600 bg-ink/70 p-3 transition-transform duration-500 ease-out group-hover:scale-105 sm:p-4">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-ui text-[10px] font-semibold uppercase tracking-[0.07em] text-brass">
-              Certificate
-            </span>
-            <span className="font-ui text-[11px] font-medium text-sage">
-              {item.year}
-            </span>
+      <div className="relative aspect-video w-full overflow-hidden border-b border-forest-600 bg-gradient-to-br from-forest-900 via-ink to-ink">
+        {item.image ? (
+          <div className="flex h-full w-full items-center justify-center bg-ink/90 p-2">
+            <img
+              src={item.image}
+              alt={`Sertifikat ${item.title}`}
+              loading="lazy"
+              decoding="async"
+              className="max-h-full max-w-full object-contain transition-transform duration-500 ease-out group-hover:scale-105"
+            />
           </div>
-          <div>
-            <div className="h-1.5 w-16 bg-brass/50 sm:w-20" />
-            <div className="mt-2 h-1.5 w-24 bg-sage/25 sm:w-32" />
+        ) : (
+          <div className="flex h-full w-full flex-col justify-between p-[clamp(10px,2vw,20px)]">
+            <div className="flex h-full w-full flex-col justify-between border border-dashed border-forest-600 bg-ink/70 p-3 transition-transform duration-500 ease-out group-hover:scale-105 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-ui text-[10px] font-semibold uppercase tracking-[0.07em] text-brass">
+                  Certificate
+                </span>
+                <span className="font-ui text-[11px] font-medium text-sage">
+                  {item.year}
+                </span>
+              </div>
+              <div>
+                <div className="h-1.5 w-16 bg-brass/50 sm:w-20" />
+                <div className="mt-2 h-1.5 w-24 bg-sage/25 sm:w-32" />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Info */}
