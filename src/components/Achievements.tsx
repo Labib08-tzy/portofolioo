@@ -5,6 +5,7 @@ import { ACHIEVEMENTS } from "../data/achievements";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { PillButton } from "./ui/PillButton";
 import { SectionHeading } from "./ui/SectionHeading";
+import { BlurBackdrop } from "./ui/BlurBackdrop";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,8 +39,9 @@ export function Achievements() {
     <section
       ref={sectionRef}
       id="achievements"
-      className="border-b border-forest-600 bg-ink py-20 sm:py-28"
+      className="relative isolate overflow-hidden border-b border-forest-600 bg-ink py-20 sm:py-28"
     >
+<BlurBackdrop variant="c" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           index="04"

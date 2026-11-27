@@ -17,6 +17,7 @@ import { getBrandColor } from "../data/brandColors";
 import { SKILL_GROUPS } from "../data/skills";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { SectionHeading } from "./ui/SectionHeading";
+import { BlurBackdrop } from "./ui/BlurBackdrop";
 
 const SKILL_ICON_MAP: Record<string, SimpleIcon> = {
   React: siReact,
@@ -406,8 +407,9 @@ export function Skills() {
     <section
       ref={sectionRef}
       id="skills"
-      className="relative scroll-mt-20 overflow-hidden border-b border-forest-600 bg-ink bg-grid-pattern pt-[clamp(48px,6vw,112px)] pb-[clamp(24px,4vw,56px)]"
+      className="isolate relative scroll-mt-20 overflow-hidden border-b border-forest-600 bg-ink bg-grid-pattern pt-20 pb-10 sm:pt-28 sm:pb-14"
     >
+<BlurBackdrop variant="b" />
       {/* Subtle ambient glows */}
       <div
         aria-hidden="true"
@@ -449,7 +451,7 @@ export function Skills() {
       <div
         ref={stageRef}
         aria-hidden="true"
-        className="skills-stage-mask relative z-10 h-[clamp(290px,52vw,520px)] w-full overflow-hidden"
+        className="skills-stage-mask relative z-10 h-[420px] w-full overflow-hidden md:h-[520px]"
       >
         {/* Top & bottom soft edge gradients */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-20 h-14 bg-gradient-to-b from-ink to-transparent" />
@@ -490,14 +492,14 @@ export function Skills() {
               style={style}
               className="skill-circle-trigger pointer-events-auto absolute top-0 left-0 will-change-transform"
             >
-              <div className="flex flex-col items-center gap-1.5 text-center">
-                <div className="skill-circle flex h-[clamp(42px,8vw,72px)] w-[clamp(42px,8vw,72px)] items-center justify-center rounded-full bg-ink/85 backdrop-blur-xs">
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="skill-circle flex h-14 w-14 items-center justify-center rounded-full bg-ink/85 backdrop-blur-xs md:h-[72px] md:w-[72px]">
                   {icon ? (
                     <svg
                       viewBox="0 0 24 24"
                       aria-hidden="true"
                       style={{ color: brandColor }}
-                      className="h-[clamp(18px,3.4vw,32px)] w-[clamp(18px,3.4vw,32px)] fill-current"
+                      className="h-6 w-6 fill-current md:h-8 md:w-8"
                     >
                       <path d={icon.path} />
                     </svg>
@@ -505,13 +507,13 @@ export function Skills() {
                     <span
                       aria-hidden="true"
                       style={{ color: brandColor }}
-                      className="font-mono text-[clamp(10px,1.8vw,14px)] font-bold"
+                      className="font-mono text-xs font-bold md:text-sm"
                     >
                       {getInitials(node.tech)}
                     </span>
                   )}
                 </div>
-                <span className="skill-label whitespace-nowrap font-mono text-[clamp(9px,1.6vw,11px)] text-sage transition-colors duration-200">
+                <span className="skill-label whitespace-nowrap font-mono text-[11px] text-sage transition-colors duration-200">
                   {node.tech}
                 </span>
               </div>

@@ -1,0 +1,82 @@
+/* Tema blur bersama (sama seperti Home). Warna tetap palet. */
+.blur-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.blur-backdrop > i {
+  position: absolute;
+  display: block;
+  border-radius: 9999px;
+  /* gradien radial sudah lembut, jadi tidak perlu filter blur (ringan di HP) */
+}
+.blur-backdrop > .b1 {
+  width: 46rem;
+  height: 46rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c-brass) 20%, transparent) 0%, transparent 68%);
+}
+.blur-backdrop > .b2 {
+  width: 52rem;
+  height: 52rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c-glow-emerald) 15%, transparent) 0%, transparent 68%);
+}
+.blur-backdrop > .b3 {
+  width: 38rem;
+  height: 38rem;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c-forest-600) 38%, transparent) 0%, transparent 70%);
+}
+.blur-backdrop[data-v="a"] > .b1 { top: -12rem; left: -14rem; }
+.blur-backdrop[data-v="a"] > .b2 { bottom: -18rem; right: -16rem; }
+.blur-backdrop[data-v="a"] > .b3 { top: 30%; right: 20%; }
+.blur-backdrop[data-v="b"] > .b1 { bottom: -16rem; right: -12rem; }
+.blur-backdrop[data-v="b"] > .b2 { top: -18rem; left: -14rem; }
+.blur-backdrop[data-v="b"] > .b3 { top: 40%; left: 15%; }
+.blur-backdrop[data-v="c"] > .b1 { top: 10%; right: -16rem; }
+.blur-backdrop[data-v="c"] > .b2 { bottom: -14rem; left: -16rem; }
+.blur-backdrop[data-v="c"] > .b3 { top: -10rem; left: 35%; }
+.blur-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(color-mix(in srgb, var(--c-sand) 7%, transparent) 1px, transparent 0);
+  background-size: 3px 3px;
+}
+@media (max-width: 640px) {
+  .blur-backdrop > i { width: 28rem !important; height: 28rem !important; }
+}
+
+/* Kartu kaca menggantikan kotak brutalist bergeser keras */
+html .brutal-card,
+html .brutal-card-lg {
+  background: color-mix(in srgb, var(--c-forest-900) 42%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-sand) 14%, transparent);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 24px 60px -28px rgb(0 0 0 / 0.65),
+    inset 0 1px 0 rgb(255 255 255 / 0.07);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
+}
+@media (max-width: 640px) {
+  html .brutal-card,
+  html .brutal-card-lg {
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* Foto About: tanpa kotak, menyatu lewat degradasi tepi */
+.about-portrait {
+  position: relative;
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 78%, transparent 100%);
+}
+.about-portrait-glow {
+  position: absolute;
+  inset: 4% -8% 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 50% 42%, color-mix(in srgb, var(--c-glow-emerald) 24%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 50% 90%, color-mix(in srgb, var(--c-brass) 16%, transparent) 0%, transparent 70%);
+}

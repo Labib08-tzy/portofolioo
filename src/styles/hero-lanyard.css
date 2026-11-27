@@ -1,0 +1,575 @@
+/* ============================================================
+   Hero: latar blur + kartu ID (lanyard) 3D
+   Semua warna memakai token dari tokens.css.
+   ============================================================ */
+
+/* ---------- Latar blur ---------- */
+.hero-blur-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 90% at 50% 0%,
+      color-mix(in srgb, var(--c-forest-900) 70%, var(--c-ink)) 0%,
+      var(--c-ink) 70%
+    );
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.hero-blob--brass {
+  left: -14%;
+  bottom: -18%;
+  width: 52vmax;
+  height: 52vmax;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--c-brass) 62%, transparent) 0%,
+    transparent 68%
+  );
+  opacity: 0.55;
+  animation: hero-drift-a 22s ease-in-out infinite alternate;
+}
+
+.hero-blob--emerald {
+  right: -16%;
+  top: -22%;
+  width: 56vmax;
+  height: 56vmax;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--c-glow-emerald) 55%, transparent) 0%,
+    transparent 66%
+  );
+  opacity: 0.42;
+  animation: hero-drift-b 26s ease-in-out infinite alternate;
+}
+
+.hero-blob--forest {
+  left: 24%;
+  top: 18%;
+  width: 46vmax;
+  height: 38vmax;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--c-forest-600) 70%, transparent) 0%,
+    transparent 70%
+  );
+  opacity: 0.5;
+  animation: hero-drift-c 30s ease-in-out infinite alternate;
+}
+
+.hero-blob--sage {
+  right: 8%;
+  bottom: -10%;
+  width: 30vmax;
+  height: 30vmax;
+  background: radial-gradient(
+    circle at 50% 50%,
+    color-mix(in srgb, var(--c-sage) 45%, transparent) 0%,
+    transparent 68%
+  );
+  opacity: 0.22;
+  animation: hero-drift-a 28s ease-in-out infinite alternate-reverse;
+}
+
+/* Bokeh: lingkaran lembut seperti foto tidak fokus */
+.hero-bokeh {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(10px);
+  opacity: 0.18;
+  will-change: transform;
+  animation: hero-bokeh 14s ease-in-out infinite alternate;
+}
+
+.hero-bokeh--1 {
+  left: 8%;
+  top: 22%;
+  width: 90px;
+  height: 90px;
+  background: color-mix(in srgb, var(--c-brass) 70%, transparent);
+}
+.hero-bokeh--2 {
+  left: 38%;
+  top: 70%;
+  width: 150px;
+  height: 150px;
+  background: color-mix(in srgb, var(--c-glow-emerald) 50%, transparent);
+  animation-duration: 18s;
+}
+.hero-bokeh--3 {
+  right: 12%;
+  top: 14%;
+  width: 70px;
+  height: 70px;
+  background: color-mix(in srgb, var(--c-sand) 60%, transparent);
+  animation-duration: 16s;
+}
+.hero-bokeh--4 {
+  right: 30%;
+  bottom: 12%;
+  width: 110px;
+  height: 110px;
+  background: color-mix(in srgb, var(--c-sage) 60%, transparent);
+  animation-duration: 20s;
+}
+
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      90% 80% at 50% 50%,
+      transparent 40%,
+      color-mix(in srgb, var(--c-ink) 85%, transparent) 100%
+    );
+}
+
+@keyframes hero-drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(7%, -6%, 0) scale(1.14);
+  }
+}
+@keyframes hero-drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  to {
+    transform: translate3d(-8%, 7%, 0) scale(0.92);
+  }
+}
+@keyframes hero-drift-c {
+  from {
+    transform: translate3d(-5%, 4%, 0) scale(0.95);
+  }
+  to {
+    transform: translate3d(6%, -5%, 0) scale(1.1);
+  }
+}
+@keyframes hero-bokeh {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(18px, -26px, 0) scale(1.18);
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-blob {
+    filter: blur(52px);
+  }
+  .hero-bokeh {
+    filter: blur(8px);
+  }
+}
+
+/* ---------- Kartu ID ---------- */
+.lanyard-stage {
+  touch-action: pan-y;
+}
+
+.lanyard-card-outer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 50% 0;
+  will-change: transform;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.lanyard-card-outer[data-ready="true"] {
+  opacity: 1;
+}
+
+.lanyard-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transform-style: preserve-3d;
+  will-change: transform;
+  outline: none;
+}
+.lanyard-card[data-grabbing="true"] {
+  cursor: grabbing;
+}
+.lanyard-card:focus-visible .lanyard-face--front {
+  outline: 2px solid var(--c-brass);
+  outline-offset: 4px;
+}
+
+.lanyard-face {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  border-radius: 1.5em;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  border: 1px solid color-mix(in srgb, var(--c-sand) 22%, transparent);
+  box-shadow:
+    0 2.4em 3.6em -1.4em rgb(0 0 0 / 0.75),
+    inset 0 1px 0 rgb(255 255 255 / 0.12),
+    inset 0 0 0 1px rgb(255 255 255 / 0.03);
+}
+
+.lanyard-face--front {
+  background:
+    var(--motif-img, none) center / cover no-repeat,
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--c-forest-900) 88%, white 12%) 0%,
+      var(--c-forest-900) 40%,
+      var(--c-ink) 100%
+    );
+  transform: translateZ(0.12em);
+}
+
+.lanyard-face--back {
+  background:
+    var(--motif-img, none) center / cover no-repeat,
+    linear-gradient(
+      200deg,
+      color-mix(in srgb, var(--c-forest-900) 85%, white 15%) 0%,
+      var(--c-ink) 70%
+    );
+  transform: rotateY(180deg) translateZ(0.12em);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.2em;
+}
+
+.lanyard-slot {
+  position: absolute;
+  top: 1.3em;
+  left: 50%;
+  width: 4.6em;
+  height: 0.8em;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: var(--c-ink);
+  box-shadow: inset 0 2px 4px rgb(0 0 0 / 0.8), 0 1px 0 rgb(255 255 255 / 0.08);
+}
+
+.lanyard-clip {
+  position: absolute;
+  left: 50%;
+  top: -1.9em;
+  width: 2.1em;
+  height: 3.2em;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 3;
+}
+.lanyard-clip::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1.7em;
+  height: 1.7em;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  border: 0.28em solid var(--c-brass);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.35), 0 0.2em 0.4em rgb(0 0 0 / 0.5);
+}
+.lanyard-clip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 1.25em;
+  width: 1.5em;
+  height: 1.8em;
+  transform: translateX(-50%);
+  border-radius: 0.4em 0.4em 0.7em 0.7em;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--c-brass) 80%, white 20%) 0%,
+    var(--c-brass) 55%,
+    color-mix(in srgb, var(--c-brass) 70%, black 30%) 100%
+  );
+  box-shadow: 0 0.2em 0.5em rgb(0 0 0 / 0.5);
+}
+
+.lanyard-header {
+  position: absolute;
+  top: 2.9em;
+  left: 1.5em;
+  right: 1.5em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.62em;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-sage);
+}
+.lanyard-header strong {
+  color: var(--c-brass);
+  font-weight: 700;
+}
+
+.lanyard-photo-wrap {
+  position: absolute;
+  top: 5.2em;
+  left: 1.3em;
+  right: 1.3em;
+  height: 15.4em;
+  border-radius: 1.1em;
+  transform-style: preserve-3d;
+}
+.lanyard-photo-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--c-forest-600) 80%, transparent);
+  background:
+    radial-gradient(
+      70% 60% at 50% 38%,
+      color-mix(in srgb, var(--c-glow-emerald) 32%, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 50% at 18% 90%,
+      color-mix(in srgb, var(--c-brass) 32%, transparent) 0%,
+      transparent 70%
+    ),
+    linear-gradient(180deg, var(--c-forest-600) 0%, var(--c-forest-900) 100%);
+  transform: translateZ(0);
+}
+.lanyard-photo-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--c-sand) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--c-sand) 7%, transparent) 1px, transparent 1px);
+  background-size: 1.4em 1.4em;
+  mask-image: linear-gradient(180deg, transparent, black 60%);
+  -webkit-mask-image: linear-gradient(180deg, transparent, black 60%);
+}
+.lanyard-photo {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 108%;
+  width: auto;
+  max-width: none;
+  transform: translate3d(-50%, 0, 2.4em);
+  clip-path: inset(-30% -10% 0 -10%);
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+  filter: drop-shadow(0 0.5em 0.9em rgb(0 0 0 / 0.55));
+}
+.lanyard-photo-tag {
+  position: absolute;
+  left: 0.9em;
+  top: 0.8em;
+  font-family: var(--font-mono);
+  font-size: 0.55em;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c-sand);
+  background: color-mix(in srgb, var(--c-ink) 65%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c-sand) 25%, transparent);
+  border-radius: 9999px;
+  padding: 0.35em 0.9em;
+  transform: translateZ(1.2em);
+}
+
+.lanyard-info {
+  position: absolute;
+  left: 1.5em;
+  right: 1.5em;
+  bottom: 1.4em;
+  transform: translateZ(0.6em);
+}
+.lanyard-name {
+  font-family: var(--font-display);
+  font-size: 1.28em;
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--c-sand);
+  text-wrap: balance;
+}
+.lanyard-role {
+  margin-top: 0.55em;
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-brass);
+}
+.lanyard-barcode {
+  margin-top: 0.9em;
+  height: 1.5em;
+  border-radius: 0.2em;
+  background-image: repeating-linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--c-sand) 80%, transparent) 0 2px,
+    transparent 2px 4px,
+    color-mix(in srgb, var(--c-sand) 80%, transparent) 4px 5px,
+    transparent 5px 9px,
+    color-mix(in srgb, var(--c-sand) 80%, transparent) 9px 12px,
+    transparent 12px 14px
+  );
+  opacity: 0.55;
+}
+
+/* Kilau kaca yang bergeser mengikuti putaran kartu */
+.lanyard-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent calc(var(--shine, 50%) - 22%),
+    rgb(255 255 255 / 0.13) var(--shine, 50%),
+    transparent calc(var(--shine, 50%) + 22%)
+  );
+  mix-blend-mode: screen;
+  transform: translateZ(2.8em);
+}
+
+/* Sisi belakang */
+.lanyard-back-pattern {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  opacity: 0.5;
+  background-image: repeating-linear-gradient(
+    -35deg,
+    transparent 0 1.4em,
+    color-mix(in srgb, var(--c-forest-600) 70%, transparent) 1.4em calc(1.4em + 1px)
+  );
+}
+.lanyard-back-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.4em;
+  height: 2.4em;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--c-brass) 70%, transparent);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--c-brass) 22%, transparent) 0%,
+    transparent 70%
+  );
+  font-family: var(--font-display);
+  font-size: 3.4em;
+  font-weight: 700;
+  color: var(--c-brass);
+  transform: translateZ(1.2em);
+}
+.lanyard-back-strip {
+  position: absolute;
+  top: 2.4em;
+  left: 0;
+  right: 0;
+  height: 2.6em;
+  background: color-mix(in srgb, var(--c-ink) 92%, transparent);
+  border-block: 1px solid color-mix(in srgb, var(--c-sand) 12%, transparent);
+}
+.lanyard-back-code {
+  width: 82%;
+  padding: 0.9em 1em 0.7em;
+  border-radius: 0.8em;
+  background: color-mix(in srgb, var(--c-sand) 92%, transparent);
+  transform: translateZ(0.6em);
+}
+.lanyard-back-code p {
+  margin: 0.5em 0 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.62em;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--c-ink);
+}
+.lanyard-barcode--lg {
+  height: 3.6em;
+  margin-top: 0;
+  opacity: 1;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--c-ink) 0 2px,
+    transparent 2px 4px,
+    var(--c-ink) 4px 5px,
+    transparent 5px 9px,
+    var(--c-ink) 9px 12px,
+    transparent 12px 14px,
+    var(--c-ink) 14px 15px,
+    transparent 15px 17px
+  );
+}
+.lanyard-flip-btn {
+  position: absolute;
+  left: 50%;
+  bottom: 0.75rem;
+  z-index: 5;
+  transform: translateX(-50%);
+  padding: 0.45rem 0.95rem;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--c-brass) 55%, transparent);
+  background: color-mix(in srgb, var(--c-ink) 55%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--c-sand);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.lanyard-flip-btn:hover {
+  border-color: var(--c-brass);
+  background: color-mix(in srgb, var(--c-brass) 18%, transparent);
+}
+.lanyard-back-foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.8em;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6em;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--c-sage);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-blob,
+  .hero-bokeh {
+    animation: none;
+  }
+}

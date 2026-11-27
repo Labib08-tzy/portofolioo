@@ -40,7 +40,7 @@ export function Preloader({
           className="fixed inset-0 z-50 flex flex-col justify-between bg-ink p-6 sm:p-10"
         >
           <div className="flex items-center justify-between border-b border-forest-600 pb-4 font-mono text-xs uppercase tracking-[0.2em] text-sage">
-            <span>LABIB // PORTFOLIO_INIT</span>
+            <span>BIANEKST // PORTFOLIO_INIT</span>
             <span>{status === "error" ? "ASSET_WARNING" : "LOADING_FRAMES"}</span>
           </div>
 

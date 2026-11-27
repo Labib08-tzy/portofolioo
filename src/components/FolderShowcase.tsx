@@ -6,6 +6,7 @@ import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { PillButton } from "./ui/PillButton";
 import { SectionHeading } from "./ui/SectionHeading";
+import { BlurBackdrop } from "./ui/BlurBackdrop";
 
 type FolderKind = "projects" | "achievements";
 
@@ -632,7 +633,9 @@ export function FolderShowcase() {
   }, [openId]);
 
   return (
-    <section className="border-b border-forest-600 bg-ink py-20 sm:py-28">
+    <section id="portfolio"
+      className="relative isolate scroll-mt-16 overflow-hidden border-b border-forest-600 bg-ink py-20 sm:py-28">
+<BlurBackdrop variant="c" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           index="03"

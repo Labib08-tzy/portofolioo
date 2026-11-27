@@ -5,6 +5,7 @@ import { SITE_INFO } from "../data/site";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { SectionHeading } from "./ui/SectionHeading";
+import { BlurBackdrop } from "./ui/BlurBackdrop";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -77,7 +78,7 @@ function EraserPortraitCanvas({
 }) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const hintRef = useRef<HTMLSpanElement | null>(null);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const [reducedToggled, setReducedToggled] = useState(false);
 
@@ -144,26 +145,11 @@ function EraserPortraitCanvas({
     let cw = 1;
     let ch = 1;
     let dpr = 1;
-    let cachedRect = { left: 0, top: 0 };
-    let hintHidden = false;
     let rafId = 0;
     let isVisible = true;
     let isTabVisible = !document.hidden;
     let cancelled = false;
     let lastTime = performance.now();
-
-    const hideHint = () => {
-      if (hintHidden) return;
-      hintHidden = true;
-      if (hintRef.current) {
-        hintRef.current.style.opacity = "0";
-      }
-    };
-
-    const updateRect = () => {
-      const rect = canvas.getBoundingClientRect();
-      cachedRect = { left: rect.left, top: rect.top };
-    };
 
     const pointer = {
       inside: false,
@@ -195,7 +181,6 @@ function EraserPortraitCanvas({
     const syncSize = () => {
       const rect = canvas.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
-      cachedRect = { left: rect.left, top: rect.top };
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       cw = Math.round(rect.width * dpr);
       ch = Math.round(rect.height * dpr);
@@ -243,10 +228,9 @@ function EraserPortraitCanvas({
       if (pointer.inside) {
         pointer.prevX = pointer.currX;
         pointer.prevY = pointer.currY;
-        const lerpFactor = Math.min(1, 1 - Math.pow(1 - 0.3, dt * 60));
-        pointer.currX += (pointer.targetX - pointer.currX) * lerpFactor;
-        pointer.currY += (pointer.targetY - pointer.currY) * lerpFactor;
-        pointer.radius += (maxRadius - pointer.radius) * Math.min(1, dt * 13);
+        pointer.currX += (pointer.targetX - pointer.currX) * Math.min(1, dt * 40);
+        pointer.currY += (pointer.targetY - pointer.currY) * Math.min(1, dt * 40);
+        pointer.radius += (maxRadius - pointer.radius) * Math.min(1, dt * 34);
 
         maskCtx.globalCompositeOperation = "source-over";
         const dx = pointer.currX - pointer.prevX;
@@ -324,14 +308,16 @@ function EraserPortraitCanvas({
       }
     };
 
-    const toCanvasCoords = (clientX: number, clientY: number) => ({
-      x: (clientX - cachedRect.left) * dpr,
-      y: (clientY - cachedRect.top) * dpr,
-    });
+    const toCanvasCoords = (clientX: number, clientY: number) => {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (clientX - rect.left) * dpr,
+        y: (clientY - rect.top) * dpr,
+      };
+    };
 
     const onPointerEnter = (e: PointerEvent) => {
       if (e.pointerType === "touch") return;
-      updateRect();
       const pt = toCanvasCoords(e.clientX, e.clientY);
       pointer.inside = true;
       pointer.fadeRate = 0.08;
@@ -341,9 +327,9 @@ function EraserPortraitCanvas({
       pointer.currY = pt.y;
       pointer.prevX = pt.x;
       pointer.prevY = pt.y;
-      pointer.radius = 0;
+      pointer.radius = cw * 0.16; // langsung muncul, tanpa jeda
       pointer.energy = 1;
-      hideHint();
+      setHasInteracted(true);
       startLoop();
     };
 
@@ -360,13 +346,12 @@ function EraserPortraitCanvas({
       pointer.targetX = pt.x;
       pointer.targetY = pt.y;
       pointer.energy = 1;
-      hideHint();
+      setHasInteracted(true);
       startLoop();
     };
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType !== "touch") return;
-      updateRect();
       const pt = toCanvasCoords(e.clientX, e.clientY);
       const maxRadius = cw * 0.22;
       pointer.inside = false;
@@ -378,7 +363,7 @@ function EraserPortraitCanvas({
       pointer.energy = 1;
       maskCtx.globalCompositeOperation = "source-over";
       drawBrushStamp(maskCtx, pt.x, pt.y, maxRadius);
-      hideHint();
+      setHasInteracted(true);
       startLoop();
     };
 
@@ -426,13 +411,12 @@ function EraserPortraitCanvas({
         if (!cancelled) setLoadFailed(true);
       });
 
-    wrapper.addEventListener("pointerenter", onPointerEnter, { passive: true });
-    wrapper.addEventListener("pointermove", onPointerMove, { passive: true });
-    wrapper.addEventListener("pointerdown", onPointerDown, { passive: true });
-    wrapper.addEventListener("pointerleave", onPointerLeave, { passive: true });
-    wrapper.addEventListener("pointercancel", onPointerLeave, { passive: true });
-    window.addEventListener("resize", syncSize, { passive: true });
-    window.addEventListener("scroll", updateRect, { passive: true });
+    wrapper.addEventListener("pointerenter", onPointerEnter);
+    wrapper.addEventListener("pointermove", onPointerMove);
+    wrapper.addEventListener("pointerdown", onPointerDown);
+    wrapper.addEventListener("pointerleave", onPointerLeave);
+    wrapper.addEventListener("pointercancel", onPointerLeave);
+    window.addEventListener("resize", syncSize);
     document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
@@ -445,7 +429,6 @@ function EraserPortraitCanvas({
       wrapper.removeEventListener("pointerleave", onPointerLeave);
       wrapper.removeEventListener("pointercancel", onPointerLeave);
       window.removeEventListener("resize", syncSize);
-      window.removeEventListener("scroll", updateRect);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [reducedMotion]);
@@ -453,7 +436,7 @@ function EraserPortraitCanvas({
   if (loadFailed) {
     return (
       <div
-        className="mx-auto flex w-full max-w-md flex-col items-center justify-center border border-forest-600 bg-forest-900 bg-grid-pattern p-6 text-center shadow-[8px_8px_0_0_var(--c-forest-600)]"
+        className="brutal-card mx-auto flex w-full max-w-md flex-col items-center justify-center p-6 text-center"
         style={{ aspectRatio: "900 / 1124" }}
       >
         <div className="flex h-20 w-20 items-center justify-center rounded-full border border-forest-600 bg-ink font-display text-2xl font-bold text-brass">
@@ -470,17 +453,14 @@ function EraserPortraitCanvas({
     <div
       ref={wrapperRef}
       onClick={reducedMotion ? () => setReducedToggled((p) => !p) : undefined}
-      className="relative mx-auto w-full max-w-md overflow-hidden border border-forest-600 bg-forest-900 bg-grid-pattern shadow-[8px_8px_0_0_var(--c-forest-600)]"
+      className="about-portrait mx-auto w-full max-w-md"
       style={{
         aspectRatio: "900 / 1124",
         touchAction: "pan-y",
       }}
     >
-      {/* Ambient emerald glow behind portrait */}
-      <div
-        aria-hidden="true"
-        className="ambient-glow-emerald pointer-events-none absolute inset-0 blur-2xl"
-      />
+      {/* Cahaya lembut di belakang potret (tanpa kotak) */}
+      <div aria-hidden="true" className="about-portrait-glow" />
 
       <canvas
         ref={canvasRef}
@@ -489,50 +469,14 @@ function EraserPortraitCanvas({
         className="relative z-10 block h-full w-full"
       />
 
-      {/* Corner mono labels */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute top-[clamp(6px,1.5vw,12px)] left-[clamp(6px,1.5vw,12px)] z-20 rounded-full border border-forest-600 bg-ink/85 px-[clamp(7px,1.5vw,12px)] py-0.5 font-mono text-[clamp(8px,1.4vw,10px)] uppercase tracking-[0.16em] text-sand backdrop-blur-xs"
-      >
-        PORTRAIT // 01
-      </span>
-
-      {!reducedMotion ? (
+      {!hasInteracted && !reducedMotion ? (
         <span
-          ref={hintRef}
           aria-hidden="true"
-          className="pointer-events-none absolute right-[clamp(6px,1.5vw,12px)] bottom-[clamp(6px,1.5vw,12px)] z-20 rounded-full border border-forest-600 bg-ink/85 px-[clamp(7px,1.5vw,12px)] py-0.5 font-ui text-[clamp(8px,1.4vw,10px)] font-semibold uppercase tracking-[0.06em] text-brass backdrop-blur-xs transition-opacity duration-200"
+          className="pointer-events-none absolute right-3 bottom-3 z-20 rounded-full border border-forest-600 bg-ink/85 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-brass backdrop-blur-xs"
         >
           {isTouch ? "SENTUH / GESER" : "GERAKKAN KURSOR"}
         </span>
       ) : null}
-    </div>
-  );
-}
-
-function QuickFactsCard({ className = "" }: { className?: string }) {
-  return (
-    <div
-      className={`about-reveal brutal-card p-[clamp(12px,2.2vw,24px)] ${className}`}
-    >
-      <p className="font-ui text-[clamp(10px,1.6vw,12px)] font-semibold uppercase tracking-[0.07em] text-brass">
-        Fakta Ringkas
-      </p>
-      <dl className="mt-[clamp(10px,1.6vw,16px)] grid grid-cols-2 gap-[clamp(10px,1.8vw,16px)]">
-        {SITE_INFO.aboutFacts.map((fact) => (
-          <div
-            key={fact.label}
-            className="min-w-0 border-l border-forest-600 pl-[clamp(8px,1.4vw,12px)]"
-          >
-            <dt className="font-ui text-[clamp(10px,1.5vw,12px)] font-semibold uppercase tracking-[0.06em] text-sage">
-              {fact.label}
-            </dt>
-            <dd className="mt-1 break-words text-[clamp(11px,1.7vw,14px)] font-medium text-sand">
-              {fact.value}
-            </dd>
-          </div>
-        ))}
-      </dl>
     </div>
   );
 }
@@ -568,9 +512,10 @@ export function About() {
     <section
       ref={sectionRef}
       id="about"
-      className="scroll-mt-20 border-b border-forest-600 bg-ink py-[clamp(48px,7vw,112px)]"
+      className="relative isolate overflow-hidden scroll-mt-20 border-b border-forest-600 bg-ink py-20 sm:py-28"
     >
-      <div className="mx-auto max-w-7xl px-[clamp(14px,3.2vw,32px)]">
+<BlurBackdrop variant="a" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           index="01"
           eyebrow="Tentang"
@@ -578,31 +523,45 @@ export function About() {
           subtitle="Latar belakang singkat, fokus belajar di RPL, dan arah pengembangan."
         />
 
-        {/* Preserve 2-column layout (text left, ~42% portrait right) across all widths */}
-        <div className="grid grid-cols-12 items-start gap-[clamp(12px,3vw,40px)]">
-          <div className="col-span-7 space-y-[clamp(10px,2vw,20px)]">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <div className="space-y-5 lg:col-span-7">
             {SITE_INFO.aboutParagraphs.map((paragraph, index) => (
               <p
                 key={index}
-                className="about-reveal text-[clamp(0.75rem,2vw,1.125rem)] leading-relaxed text-sand/90"
+                className="about-reveal text-base leading-relaxed text-sand/90 sm:text-lg"
               >
                 {paragraph}
               </p>
             ))}
 
-            {/* Desktop (lg+): Fakta Ringkas stays below paragraphs in left column */}
-            <QuickFactsCard className="mt-8 hidden lg:block" />
+            <div className="about-reveal brutal-card mt-8 p-5 sm:p-6">
+              <p className="font-mono text-xs uppercase tracking-[0.18em] text-brass">
+                Fakta Ringkas
+              </p>
+              <dl className="mt-4 grid gap-4 sm:grid-cols-2">
+                {SITE_INFO.aboutFacts.map((fact) => (
+                  <div
+                    key={fact.label}
+                    className="border-l border-forest-600 pl-3"
+                  >
+                    <dt className="font-mono text-xs uppercase tracking-wider text-sage">
+                      {fact.label}
+                    </dt>
+                    <dd className="mt-1 text-sm font-medium text-sand">
+                      {fact.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
 
-          <div className="about-reveal col-span-5">
+          <div className="about-reveal lg:col-span-5 lg:-mt-14 lg:self-start">
             <EraserPortraitCanvas
               reducedMotion={reducedMotion}
               isTouch={isTouch}
             />
           </div>
-
-          {/* Mobile/Tablet (< lg): Fakta Ringkas spans full width below both columns */}
-          <QuickFactsCard className="col-span-12 lg:hidden" />
         </div>
       </div>
     </section>

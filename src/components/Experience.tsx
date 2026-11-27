@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { EXPERIENCE_ITEMS } from "../data/experience";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { SectionHeading } from "./ui/SectionHeading";
+import { BlurBackdrop } from "./ui/BlurBackdrop";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -56,9 +57,10 @@ export function Experience() {
     <section
       ref={sectionRef}
       id="experience"
-      className="border-b border-forest-600 bg-ink py-[clamp(48px,7vw,112px)]"
+      className="relative isolate overflow-hidden border-b border-forest-600 bg-ink py-20 sm:py-28"
     >
-      <div className="mx-auto max-w-7xl px-[clamp(14px,3.2vw,32px)]">
+<BlurBackdrop variant="b" />
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           index="05"
           eyebrow="Pengalaman"
@@ -66,7 +68,7 @@ export function Experience() {
           subtitle="Hanya mencantumkan pengalaman nyata yang benar-benar dijalani."
         />
 
-        <div className="relative pl-[clamp(24px,4.5vw,48px)]">
+        <div className="relative pl-8 sm:pl-12">
           {/* Vertical timeline line */}
           <div
             aria-hidden="true"
@@ -86,7 +88,7 @@ export function Experience() {
                   className="absolute top-6 -left-[25px] h-3 w-3 rounded-full border-2 border-ink bg-brass sm:-left-[33px]"
                 />
                 <div className="brutal-card p-6">
-                  <div className="flex flex-wrap items-center justify-between gap-2 font-ui text-xs font-semibold">
+                  <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs">
                     <span className="rounded-full border border-forest-600 bg-ink px-3 py-1 text-brass">
                       {item.period}
                     </span>
