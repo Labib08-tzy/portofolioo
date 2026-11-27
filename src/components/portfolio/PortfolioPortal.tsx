@@ -18,6 +18,7 @@ import {
   type PortfolioCategory,
 } from "./portfolioData";
 import { DEFAULT_GEO, measureStroke, type Geo } from "./measureStroke";
+import { MobilePortfolioFolders } from "./MobilePortfolioFolders";
 import "../../styles/portal.css";
 
 /*
@@ -136,12 +137,15 @@ function Portal() {
       id="portfolio"
       aria-label="Portofolio"
       className="relative bg-ink"
-      style={{ height: SECTION_HEIGHT }}
     >
       <span id="projects" aria-hidden="true" className="absolute top-0" />
       <span id="achievements" aria-hidden="true" className="absolute top-0" />
 
-      <div className="sticky top-0 isolate h-[100svh] overflow-hidden">
+      <div
+        className="portfolio-desktop-portal"
+        style={{ height: SECTION_HEIGHT }}
+      >
+        <div className="sticky top-0 isolate h-[100svh] overflow-hidden">
         <BlurBackdrop variant="c" />
 
         {/* Judul yang di-zoom */}
@@ -215,6 +219,11 @@ function Portal() {
             </div>
           </motion.div>
         </motion.div>
+      </div>
+      </div>
+
+      <div className="portfolio-mobile-folders">
+        <MobilePortfolioFolders />
       </div>
     </section>
   );
