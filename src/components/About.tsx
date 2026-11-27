@@ -516,12 +516,7 @@ export function About() {
     >
 <BlurBackdrop variant="a" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          index="01"
-          eyebrow="Tentang"
-          title="Mengenal Lebih Dekat"
-          subtitle="Latar belakang singkat, fokus belajar di RPL, dan arah pengembangan."
-        />
+        <SectionHeading title="Tentang Saya" />
 
         <div className="grid gap-10 lg:grid-cols-12">
           <div className="space-y-5 lg:col-span-7">

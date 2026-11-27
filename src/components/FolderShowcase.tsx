@@ -637,12 +637,7 @@ export function FolderShowcase() {
       className="relative isolate scroll-mt-16 overflow-hidden border-b border-forest-600 bg-ink py-20 sm:py-28">
 <BlurBackdrop variant="c" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          index="03"
-          eyebrow="Arsip Karya & Pencapaian"
-          title="Projects & Sertifikat"
-          subtitle="Arahkan kursor atau fokus untuk mengintip isi folder, lalu buka untuk melihat detail."
-        />
+        <SectionHeading title="Project & Sertifikat" />
 
         <div className="grid gap-10 md:grid-cols-2 lg:gap-12">
           {FOLDERS.map((folder) => (

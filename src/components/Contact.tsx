@@ -36,12 +36,7 @@ export function Contact() {
       >
 <BlurBackdrop variant="a" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <SectionHeading
-            index="06"
-            eyebrow="Kontak"
-            title="Mari Terhubung"
-            subtitle="Terbuka untuk diskusi magang, kerja sama project web, atau peluang belajar."
-          />
+          <SectionHeading title="Kontak" />
 
           <div className="grid gap-6 md:grid-cols-3">
             {channels.map((ch) => (

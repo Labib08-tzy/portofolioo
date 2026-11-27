@@ -308,12 +308,7 @@ export function Projects() {
     >
 <BlurBackdrop variant="a" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          index="03"
-          eyebrow="Karya"
-          title="Project Terpilih"
-          subtitle="Setiap project ditampilkan dengan status jujur dan studi kasus terstruktur."
-        />
+        <SectionHeading title="Project" />
 
         <div className="grid gap-6 md:grid-cols-2">
           {PROJECTS.map((project) => (

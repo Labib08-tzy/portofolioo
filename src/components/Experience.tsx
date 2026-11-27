@@ -61,12 +61,7 @@ export function Experience() {
     >
 <BlurBackdrop variant="b" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          index="05"
-          eyebrow="Pengalaman"
-          title="Perjalanan & Praktik"
-          subtitle="Hanya mencantumkan pengalaman nyata yang benar-benar dijalani."
-        />
+        <SectionHeading title="Pengalaman" />
 
         <div className="relative pl-8 sm:pl-12">
           {/* Vertical timeline line */}

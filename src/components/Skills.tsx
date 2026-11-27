@@ -421,12 +421,7 @@ export function Skills() {
       />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          index="02"
-          eyebrow="Keahlian"
-          title="Teknologi & Perkakas"
-          subtitle="Teknologi yang digunakan dalam pengembangan web, mobile, dan alur kerja."
-        />
+        <SectionHeading title="Keahlian" />
       </div>
 
       {/* Screen-reader accessible semantic list per group */}

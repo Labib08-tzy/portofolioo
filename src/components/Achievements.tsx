@@ -43,12 +43,7 @@ export function Achievements() {
     >
 <BlurBackdrop variant="c" />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeading
-          index="04"
-          eyebrow="Pencapaian"
-          title="Kompetisi & Sertifikat"
-          subtitle="Catatan pencapaian yang dapat diverifikasi dan mudah ditambah lewat data."
-        />
+        <SectionHeading title="Pencapaian" />
 
         <div className="grid gap-6 md:grid-cols-3">
           {ACHIEVEMENTS.map((item) => (

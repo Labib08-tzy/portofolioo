@@ -35,12 +35,7 @@ export function PortfolioSection() {
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: reducedMotion ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
         >
-          <SectionHeading
-            index="04"
-            eyebrow="Portofolio"
-            title="Projects, Certificates & Awards"
-            subtitle="Pilih folder kategori untuk menelusuri karya aplikasi, sertifikat kompetensi, dan pencapaian kompetisi."
-          />
+          <SectionHeading title="Portofolio" />
         </motion.div>
 
         <PortfolioFolders
