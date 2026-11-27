@@ -35,21 +35,29 @@
     var(--c-sand);
 }
 
-/* Breakpoint switch: desktop (> 768px) keeps Portal untouched; mobile (<= 768px) shows Folder Accordion */
-.portfolio-desktop-portal {
+/* Breakpoint switch: desktop (> 768px) keeps horizontal track; mobile (<= 768px) shows Folder Accordion inside portal-world */
+.portfolio-portal-section {
+  height: 800svh;
+}
+
+.portfolio-desktop-track {
   display: block;
 }
 
-.portfolio-mobile-folders {
+.portfolio-mobile-track {
   display: none;
 }
 
 @media (max-width: 768px) {
-  .portfolio-desktop-portal {
+  .portfolio-portal-section {
+    height: 260svh;
+  }
+
+  .portfolio-desktop-track {
     display: none;
   }
 
-  .portfolio-mobile-folders {
+  .portfolio-mobile-track {
     display: block;
   }
 }

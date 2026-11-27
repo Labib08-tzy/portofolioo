@@ -31,7 +31,6 @@ import "../../styles/portal.css";
 const ZOOM_START = 0.05;
 const ZOOM_END = 0.4;
 const TRACK_END = 0.96;
-const SECTION_HEIGHT = "800svh";
 const CATEGORY_ORDER: PortfolioCategory[] = ["projects", "certificates", "awards"];
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -136,16 +135,12 @@ function Portal() {
       ref={containerRef}
       id="portfolio"
       aria-label="Portofolio"
-      className="relative bg-ink"
+      className="portfolio-portal-section relative bg-ink"
     >
       <span id="projects" aria-hidden="true" className="absolute top-0" />
       <span id="achievements" aria-hidden="true" className="absolute top-0" />
 
-      <div
-        className="portfolio-desktop-portal"
-        style={{ height: SECTION_HEIGHT }}
-      >
-        <div className="sticky top-0 isolate h-[100svh] overflow-hidden">
+      <div className="sticky top-0 isolate h-[100svh] overflow-hidden">
         <BlurBackdrop variant="c" />
 
         {/* Judul yang di-zoom */}
@@ -169,61 +164,64 @@ function Portal() {
           style={{ opacity: worldOpacity, pointerEvents: portalEvents }}
         >
           <motion.div className="absolute inset-0" style={{ scale: worldScale, opacity: contentOpacity }}>
-            <div className="h-full w-full overflow-hidden pb-24 pt-16">
-              <motion.div
-                ref={trackRef}
-                className="flex h-full w-max items-center gap-[clamp(24px,4vw,64px)] px-[8vw]"
-                style={{ x: trackX }}
-              >
-                <IntroPanel
-                  panelRef={(el) => {
-                    panelRefs.current.projects = el;
-                  }}
-                />
-                {PROJECTS.map((project) => (
-                  <ProjectPanel key={project.id} project={project} />
-                ))}
-                <CertificatesPanel
-                  items={CERTIFICATE_ITEMS}
-                  panelRef={(el) => {
-                    panelRefs.current.certificates = el;
-                  }}
-                />
-                <ListPanel
-                  category="awards"
-                  items={AWARD_ITEMS}
-                  panelRef={(el) => {
-                    panelRefs.current.awards = el;
-                  }}
-                />
-              </motion.div>
-            </div>
-
-            <div className="absolute inset-x-0 bottom-0 px-[8vw] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-              <div className="mx-auto flex max-w-5xl flex-col gap-3">
-                <div className="flex justify-between font-ui text-xs sm:text-sm">
-                  {PORTFOLIO_CATEGORIES.map((c, i) => (
-                    <span
-                      key={c.id}
-                      className={i === active ? "text-ink" : "text-ink/40"}
-                      style={{ transition: "color 0.2s" }}
-                    >
-                      {c.label} ({c.count})
-                    </span>
+            {/* Desktop (> 768px): horizontal carousel + bottom progress bar */}
+            <div className="portfolio-desktop-track h-full w-full">
+              <div className="h-full w-full overflow-hidden pb-24 pt-16">
+                <motion.div
+                  ref={trackRef}
+                  className="flex h-full w-max items-center gap-[clamp(24px,4vw,64px)] px-[8vw]"
+                  style={{ x: trackX }}
+                >
+                  <IntroPanel
+                    panelRef={(el) => {
+                      panelRefs.current.projects = el;
+                    }}
+                  />
+                  {PROJECTS.map((project) => (
+                    <ProjectPanel key={project.id} project={project} />
                   ))}
-                </div>
-                <div className="h-1 w-full overflow-hidden rounded-full bg-ink/10">
-                  <motion.div className="h-full rounded-full bg-ink/70" style={{ width: barWidth }} />
+                  <CertificatesPanel
+                    items={CERTIFICATE_ITEMS}
+                    panelRef={(el) => {
+                      panelRefs.current.certificates = el;
+                    }}
+                  />
+                  <ListPanel
+                    category="awards"
+                    items={AWARD_ITEMS}
+                    panelRef={(el) => {
+                      panelRefs.current.awards = el;
+                    }}
+                  />
+                </motion.div>
+              </div>
+
+              <div className="absolute inset-x-0 bottom-0 px-[8vw] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                <div className="mx-auto flex max-w-5xl flex-col gap-3">
+                  <div className="flex justify-between font-ui text-xs sm:text-sm">
+                    {PORTFOLIO_CATEGORIES.map((c, i) => (
+                      <span
+                        key={c.id}
+                        className={i === active ? "text-ink" : "text-ink/40"}
+                        style={{ transition: "color 0.2s" }}
+                      >
+                        {c.label} ({c.count})
+                      </span>
+                    ))}
+                  </div>
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-ink/10">
+                    <motion.div className="h-full rounded-full bg-ink/70" style={{ width: barWidth }} />
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Mobile (<= 768px): vertical Folder Accordion inside portal-world */}
+            <div className="portfolio-mobile-track h-full w-full overflow-y-auto">
+              <MobilePortfolioFolders />
+            </div>
           </motion.div>
         </motion.div>
-      </div>
-      </div>
-
-      <div className="portfolio-mobile-folders">
-        <MobilePortfolioFolders />
       </div>
     </section>
   );

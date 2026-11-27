@@ -245,7 +245,7 @@ export function MobilePortfolioFolders() {
   };
 
   return (
-    <div className="portal-surface overflow-x-clip px-4 py-14 sm:px-6">
+    <div className="min-h-full overflow-x-clip px-4 pt-20 pb-10 sm:px-6">
       <div className="relative z-10 mx-auto max-w-xl">
         <div className="mb-7">
           <p className="font-ui text-xs font-semibold uppercase tracking-[0.14em] text-forest-900">
