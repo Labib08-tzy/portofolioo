@@ -17,9 +17,9 @@ const About = lazy(() =>
 const Skills = lazy(() =>
   import("./components/Skills").then((m) => ({ default: m.Skills }))
 );
-const PortfolioSection = lazy(() =>
-  import("./components/portfolio/PortfolioSection").then((m) => ({
-    default: m.PortfolioSection,
+const PortfolioPortal = lazy(() =>
+  import("./components/portfolio/PortfolioPortal").then((m) => ({
+    default: m.PortfolioPortal,
   }))
 );
 const Experience = lazy(() =>
@@ -92,12 +92,7 @@ export function App() {
               >
                 <Skills />
               </CinematicSection>
-              <CinematicSection
-                mode="flow"
-                bgColors={["#0b0f0d", "#101712", "#0b0f0d"]}
-              >
-                <PortfolioSection />
-              </CinematicSection>
+              <PortfolioPortal />
               <CinematicSection
                 mode="flow"
                 bgColors={["#0b0f0d", "#0e1410", "#0b0f0d"]}
