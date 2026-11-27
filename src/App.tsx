@@ -22,8 +22,13 @@ const PortfolioPortal = lazy(() =>
     default: m.PortfolioPortal,
   }))
 );
-const Experience = lazy(() =>
-  import("./components/Experience").then((m) => ({ default: m.Experience }))
+const PhotoFlight = lazy(() =>
+  import("./components/gallery/PhotoFlight").then((m) => ({
+    default: m.PhotoFlight,
+  }))
+);
+const ContactExit = lazy(() =>
+  import("./components/ContactExit").then((m) => ({ default: m.ContactExit }))
 );
 const Contact = lazy(() =>
   import("./components/Contact").then((m) => ({ default: m.Contact }))
@@ -93,18 +98,9 @@ export function App() {
                 <Skills />
               </CinematicSection>
               <PortfolioPortal />
-              <CinematicSection
-                mode="flow"
-                bgColors={["#0b0f0d", "#0e1410", "#0b0f0d"]}
-              >
-                <Experience />
-              </CinematicSection>
-              <CinematicSection
-                mode="flow"
-                bgColors={["#0b0f0d", "#0d1310", "#0b0f0d"]}
-              >
-                <Contact />
-              </CinematicSection>
+              <PhotoFlight />
+              <ContactExit />
+              <Contact />
             </Suspense>
           </main>
         </>

@@ -72,6 +72,8 @@ export interface ContactInfo {
   email: string;
   github: string;
   linkedin: string;
+  instagram: string;
+  telegram: string;
 }
 
 export interface AboutFact {
@@ -120,6 +122,8 @@ export const CONTACT_INFO: ContactInfo = {
   email: "TODO: email@domain.com",
   github: "TODO: https://github.com/username",
   linkedin: "TODO: https://linkedin.com/in/username",
+  instagram: "TODO: https://instagram.com/username",
+  telegram: "TODO: https://t.me/username",
 };
 
 export const TECH_CREDITS = [

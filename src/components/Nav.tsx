@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import "../styles/blur-theme.css";
+
+/*
+ * Dimensi berlatar sand (terang) dimulai di Portofolio, berlanjut ke galeri foto, dan berakhir saat
+ * layar terang keluar lewat huruf "o" di judul Kontak. Selama itu navbar memakai tema terang
+ * dengan tombol aktif hijau.
+ * WORLD_IN mengikuti PortfolioPortal (worldOpacity 0.5 di ~0.32).
+ * CONTACT_LIGHT_END mengikuti ContactExit (dimensi tinggal separuh terlihat di ~0.18).
+ */
+const WORLD_IN = 0.32;
+const CONTACT_LIGHT_END = 0.18;
 
 export interface NavItem {
   label: string;
@@ -25,6 +36,7 @@ interface NavProps {
 export function Nav({ items = DEFAULT_NAV_ITEMS }: NavProps) {
   const [hidden, setHidden] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
+  const [light, setLight] = useState(false);
   const [activeHref, setActiveHref] = useState<string>(items[0]?.href ?? "#home");
   const lastScrollY = useRef(0);
   const pinUntil = useRef(0);
@@ -56,6 +68,25 @@ export function Nav({ items = DEFAULT_NAV_ITEMS }: NavProps) {
         document.documentElement.scrollHeight - 4;
       if (atBottom && items.length) current = items[items.length - 1].href;
       setActiveHref(current);
+
+      const portfolio = document.getElementById("portfolio");
+      let inWorld = false;
+      if (portfolio) {
+        const rect = portfolio.getBoundingClientRect();
+        const scrollable = rect.height - window.innerHeight;
+        // hanya untuk versi animasi (section tinggi); versi reduced-motion tetap tema gelap
+        if (scrollable > window.innerHeight * 2) {
+          const p = -rect.top / scrollable;
+          inWorld = p > WORLD_IN;
+        }
+      }
+      const exit = document.getElementById("contact-exit");
+      if (inWorld && exit) {
+        const er = exit.getBoundingClientRect();
+        const escrollable = er.height - window.innerHeight;
+        if (escrollable > 0 && -er.top / escrollable > CONTACT_LIGHT_END) inWorld = false;
+      }
+      setLight(inWorld);
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(compute);
@@ -87,7 +118,8 @@ export function Nav({ items = DEFAULT_NAV_ITEMS }: NavProps) {
     >
       <nav
         aria-label="Navigasi utama"
-        className="pointer-events-auto flex max-w-full items-center gap-0.5 rounded-full border border-sand/15 bg-ink/55 p-1 shadow-[0_10px_40px_-12px_rgb(0_0_0/0.7)] backdrop-blur-xl sm:gap-1 sm:p-1.5"
+        data-theme={light ? "light" : "dark"}
+        className="nav-glass pointer-events-auto flex max-w-full items-center gap-0.5 rounded-full border p-1 backdrop-blur-xl sm:gap-1 sm:p-1.5"
       >
         {items.map((item) => {
           const isActive = activeHref === item.href;
@@ -100,15 +132,13 @@ export function Nav({ items = DEFAULT_NAV_ITEMS }: NavProps) {
                 setActiveHref(item.href);
               }}
               aria-current={isActive ? "page" : undefined}
-              className={`relative rounded-full px-3 py-1.5 text-[12px] font-medium tracking-wide transition-colors sm:px-4 sm:py-2 sm:text-[13px] ${
-                isActive ? "text-ink" : "text-sand/75 hover:text-sand"
-              }`}
+              className="nav-link relative rounded-full px-3 py-1.5 text-[12px] font-medium tracking-wide sm:px-4 sm:py-2 sm:text-[13px]"
             >
               {isActive ? (
                 <motion.span
                   layoutId="nav-active-pill"
                   aria-hidden="true"
-                  className="absolute inset-0 rounded-full bg-brass"
+                  className="nav-pill absolute inset-0 rounded-full"
                   transition={
                     reducedMotion
                       ? { duration: 0 }

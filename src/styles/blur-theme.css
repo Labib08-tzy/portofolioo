@@ -80,3 +80,41 @@ html .brutal-card-lg {
     radial-gradient(ellipse 60% 55% at 50% 42%, color-mix(in srgb, var(--c-glow-emerald) 24%, transparent) 0%, transparent 70%),
     radial-gradient(ellipse 50% 40% at 50% 90%, color-mix(in srgb, var(--c-brass) 16%, transparent) 0%, transparent 70%);
 }
+
+/* Navbar kaca: gelap di tema hutan, terang (tombol hijau) saat di dalam dimensi Portofolio */
+.nav-glass {
+  --nav-bg: color-mix(in srgb, var(--c-ink) 55%, transparent);
+  --nav-border: color-mix(in srgb, var(--c-sand) 15%, transparent);
+  --nav-text: color-mix(in srgb, var(--c-sand) 75%, transparent);
+  --nav-text-hover: var(--c-sand);
+  --nav-text-active: var(--c-ink);
+  --nav-pill: var(--c-brass);
+  --nav-shadow: 0 10px 40px -12px rgb(0 0 0 / 0.7);
+  background-color: var(--nav-bg);
+  border-color: var(--nav-border);
+  box-shadow: var(--nav-shadow);
+  transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+.nav-glass[data-theme="light"] {
+  --nav-bg: color-mix(in srgb, #f3ead6 62%, transparent);
+  --nav-border: color-mix(in srgb, var(--c-ink) 12%, transparent);
+  --nav-text: color-mix(in srgb, var(--c-ink) 72%, transparent);
+  --nav-text-hover: var(--c-ink);
+  --nav-text-active: #eef3e8;
+  --nav-pill: color-mix(in srgb, var(--c-forest-600) 80%, var(--c-ink));
+  --nav-shadow: 0 10px 36px -14px rgb(11 15 13 / 0.35);
+}
+.nav-link {
+  color: var(--nav-text);
+  transition: color 0.3s ease;
+}
+.nav-link:hover {
+  color: var(--nav-text-hover);
+}
+.nav-link[aria-current="page"] {
+  color: var(--nav-text-active);
+}
+.nav-pill {
+  background-color: var(--nav-pill);
+  transition: background-color 0.4s ease;
+}
