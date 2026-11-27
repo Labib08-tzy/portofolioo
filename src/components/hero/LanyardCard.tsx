@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface LanyardCardProps {
   reducedMotion: boolean;
@@ -142,7 +142,6 @@ export function LanyardCard({
   const strapStitchRef = useRef<SVGPathElement | null>(null);
   const impulseRef = useRef<(dir: number) => void>(() => {});
   const flipRef = useRef<() => boolean>(() => false);
-  const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -448,7 +447,6 @@ export function LanyardCard({
         flipAngle = flipTarget;
         render(0);
       }
-      setFlipped(flipTarget === 180);
       return flipTarget === 180;
     };
     flipRef.current = doFlip;
@@ -584,14 +582,6 @@ export function LanyardCard({
         </div>
       </div>
 
-      <button
-        type="button"
-        className="lanyard-flip-btn"
-        aria-pressed={flipped}
-        onClick={() => flipRef.current()}
-      >
-        <span aria-hidden="true">↻</span> {flipped ? "Lihat depan" : "Balik kartu"}
-      </button>
     </div>
   );
 }

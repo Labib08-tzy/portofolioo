@@ -74,7 +74,8 @@ export function measureStroke(h2: HTMLElement, oSpan: HTMLElement, mark: HTMLEle
   const oy = h2.offsetTop + hy;
   const vw = wrap.clientWidth;
   const vh = wrap.clientHeight;
-  const smax = Math.max(8, (0.9 * vh) / thick);
+  // dibatasi 80x: di HP huruf bisa diperbesar ribuan px dan membuat berat; lapisan dimensi sudah menutup sisanya
+  const smax = Math.min(80, Math.max(8, (0.9 * vh) / thick));
   return { hx, hy, ox, oy, vw, vh, smax };
 }
 

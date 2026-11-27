@@ -105,7 +105,6 @@ function Portal() {
   const tx = useTransform(move, (v) => (geo.current.vw / 2 - geo.current.ox) * v);
   const ty = useTransform(move, (v) => (geo.current.vh / 2 - geo.current.oy) * v);
   const headOpacity = useTransform(z, [0.93, 0.98], [1, 0]);
-  const hintOpacity = useTransform(p, [0, 0.05], [1, 0]);
 
   // --- Dimensi: warnanya sama dengan huruf "o", muncul saat layar penuh oleh garis huruf ---
   const worldOpacity = useTransform(p, (v) => smooth((v - 0.267) / 0.105));
@@ -160,13 +159,6 @@ function Portal() {
           </motion.h2>
         </div>
 
-        <motion.p
-          style={{ opacity: hintOpacity }}
-          className="pointer-events-none absolute inset-x-0 bottom-[max(2.5rem,env(safe-area-inset-bottom))] z-10 text-center font-ui text-sm text-sage"
-        >
-          Scroll untuk masuk
-        </motion.p>
-
         {/* Dimensi lain */}
         <motion.div
           className="portal-world inset-0 z-30"
@@ -206,7 +198,7 @@ function Portal() {
 
             <div className="absolute inset-x-0 bottom-0 px-[8vw] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <div className="mx-auto flex max-w-5xl flex-col gap-3">
-                <div className="flex justify-between font-ui text-sm">
+                <div className="flex justify-between font-ui text-xs sm:text-sm">
                   {PORTFOLIO_CATEGORIES.map((c, i) => (
                     <span
                       key={c.id}
@@ -217,8 +209,8 @@ function Portal() {
                     </span>
                   ))}
                 </div>
-                <div className="h-px w-full bg-ink/15">
-                  <motion.div className="h-px bg-ink" style={{ width: barWidth }} />
+                <div className="h-1 w-full overflow-hidden rounded-full bg-ink/10">
+                  <motion.div className="h-full rounded-full bg-ink/70" style={{ width: barWidth }} />
                 </div>
               </div>
             </div>
@@ -232,6 +224,10 @@ function Portal() {
 /* ---------- Panel ---------- */
 
 type PanelRef = (el: HTMLElement | null) => void;
+
+const GLASS =
+  "border border-white/50 bg-white/40 backdrop-blur-md shadow-[0_24px_60px_-28px_rgba(11,15,13,0.45)] md:bg-white/30 md:backdrop-blur-xl";
+const GREEN = "bg-[color-mix(in_srgb,var(--c-forest-600)_80%,var(--c-ink))] text-[#eef3e8]";
 
 function IntroPanel({ panelRef }: { panelRef: PanelRef }) {
   const text = `${PROJECTS.length} project, ${CERTIFICATE_ITEMS.length} sertifikat, dan ${AWARD_ITEMS.length} penghargaan.`;
@@ -249,7 +245,7 @@ function IntroPanel({ panelRef }: { panelRef: PanelRef }) {
 
 function Chip({ children }: { children: string }) {
   return (
-    <span className="rounded-full border border-ink/40 px-3 py-1 font-ui text-xs text-sand">
+    <span className="rounded-full border border-white/55 bg-white/35 px-3 py-1 font-ui text-xs text-ink backdrop-blur-md">
       {children}
     </span>
   );
@@ -270,8 +266,8 @@ function ProjectPanel({ project }: { project: Project }) {
 
   return (
     <article className="grid h-[min(76svh,620px)] w-[min(88vw,1040px)] shrink-0 gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-      <div className="relative hidden flex-col overflow-hidden rounded-xl border border-ink/30 bg-ink/5 lg:flex">
-        <div className="flex items-center gap-1.5 border-b border-ink/20 px-4 py-3">
+      <div className={`relative hidden flex-col overflow-hidden rounded-3xl lg:flex ${GLASS}`}>
+        <div className="flex items-center gap-1.5 px-5 py-4">
           <span className="h-2.5 w-2.5 rounded-full bg-ink/25" />
           <span className="h-2.5 w-2.5 rounded-full bg-ink/25" />
           <span className="h-2.5 w-2.5 rounded-full bg-ink/25" />
@@ -285,24 +281,24 @@ function ProjectPanel({ project }: { project: Project }) {
         )}
       </div>
 
-      <div className="flex min-h-0 flex-col justify-center gap-5">
+      <div className="flex min-h-0 flex-col justify-center gap-3 sm:gap-5">
         <div className="flex flex-wrap gap-2">
           <Chip>{project.type}</Chip>
           <Chip>{project.status === "done" ? "Selesai" : "Dalam pengembangan"}</Chip>
         </div>
 
-        <h3 className="font-display text-[clamp(2rem,4.2vw,3.5rem)] font-bold leading-[1.02] text-ink">
+        <h3 className="font-display text-[clamp(1.75rem,4.6vw,3.5rem)] font-bold leading-[1.02] text-ink">
           {project.title}
         </h3>
 
-        <p className={`max-w-xl font-ui text-base ${description ? "text-ink/90" : "text-ink/40"}`}>
+        <p className={`max-w-xl font-ui text-sm line-clamp-4 sm:line-clamp-none sm:text-base ${description ? "text-ink/90" : "text-ink/40"}`}>
           {description || "Detail project ini segera ditambahkan."}
         </p>
 
         {stack.length > 0 ? (
           <ul className="flex flex-wrap gap-2">
-            {stack.map((item) => (
-              <li key={item}>
+            {stack.map((item, i) => (
+              <li key={item} className={i >= 4 ? "hidden sm:block" : undefined}>
                 <Chip>{item}</Chip>
               </li>
             ))}
@@ -311,10 +307,10 @@ function ProjectPanel({ project }: { project: Project }) {
 
         {study.length > 0 ? (
           <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-            {study.map(([label, text]) => (
-              <div key={label}>
+            {study.map(([label, text], i) => (
+              <div key={label} className={i >= 2 ? "hidden sm:block" : undefined}>
                 <dt className="font-ui text-sm font-semibold text-ink">{label}</dt>
-                <dd className="mt-1 line-clamp-3 font-ui text-sm text-ink/80 lg:line-clamp-4">{text}</dd>
+                <dd className="mt-1 line-clamp-2 font-ui text-sm text-ink/80 sm:line-clamp-3 lg:line-clamp-4">{text}</dd>
               </div>
             ))}
           </dl>
@@ -327,7 +323,7 @@ function ProjectPanel({ project }: { project: Project }) {
                 href={project.demoUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full bg-ink px-5 py-2.5 font-ui text-sm font-semibold text-sand"
+                className={`rounded-full px-5 py-2.5 font-ui text-sm font-semibold ${GREEN}`}
               >
                 Lihat demo
               </a>
@@ -337,7 +333,7 @@ function ProjectPanel({ project }: { project: Project }) {
                 href={project.repoUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-ink/50 px-5 py-2.5 font-ui text-sm font-semibold text-ink"
+                className="rounded-full border border-white/60 bg-white/35 px-5 py-2.5 font-ui text-sm font-semibold text-ink backdrop-blur-md"
               >
                 Kode sumber
               </a>
@@ -362,17 +358,20 @@ function ListPanel({
   return (
     <section ref={panelRef} className="flex w-[min(88vw,760px)] shrink-0 flex-col gap-6">
       <div>
-        <h3 className="font-display text-[clamp(2rem,4.2vw,3.5rem)] font-bold leading-[1.02] text-ink">
+        <h3 className="font-display text-[clamp(1.75rem,4.6vw,3.5rem)] font-bold leading-[1.02] text-ink">
           {meta?.label}
         </h3>
         <p className="mt-2 font-ui text-base text-ink/80">{meta?.subtitle}</p>
       </div>
-      <ul className="divide-y divide-ink/25 border-y border-ink/25">
+      <ul className="flex flex-col gap-3">
         {items.map((item) => {
           const title = clean(item.title);
           const detail = [clean(item.issuer), clean(item.year)].filter(Boolean).join(", ");
           return (
-            <li key={item.id} className="flex items-baseline justify-between gap-4 py-4">
+            <li
+              key={item.id}
+              className={`flex items-baseline justify-between gap-4 rounded-2xl px-5 py-4 ${GLASS}`}
+            >
               <div>
                 <p className={`font-display text-xl font-bold ${title ? "text-ink" : "text-ink/40"}`}>
                   {title || "Segera ditambahkan"}
